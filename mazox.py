@@ -3410,7 +3410,7 @@ def ejecutar(linea):
 
 ╚══════════════════════════════════════════════════════════════╝
 
-💡 YA NO GASTES DINERO EN EL MAZO 🪓 (por la lanza 🗡️)
+💡 YA NO GASTES DINERO EN EL MAZO!! recuerda bien.
 
 """)
 
