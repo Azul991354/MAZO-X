@@ -1,42 +1,11 @@
 # ======================= #
-# MAZOX SYSTEM 5.0        #
+# MAZOX SYSTEM 6.0        #
 # ––––––––––––––––––––––– #
-# C H A N G E L O G       #
-#  - Closures / Lambdas   #
-#  - Generadores          #
-#  - Decoradores          #
-#  - Async / Await mazo   #
-#  - Hilos (Threads)      #
-#  - Colas prioridad      #
-#  - Árboles / Grafos     #
-#  - Búsqueda binaria     #
-#  - Ordenamiento rápido  #
-#  - Encriptación AES     #
-#  - Compresión ZIP       #
-#  - SQLite mazo          #
-#  - HTTP requests        #
-#  - Web scraping         #
-#  - SMTP / Emails        #
-#  - Serialización pickle #
-#  - Expresiones lambda   #
-#  - Pattern matching     #
-#  - Context managers     #
-#  - Metaclases mazo      #
-#  - Interfaces / ABC     #
-#  - Dataclasses          #
-#  - Enum mazónico        #
-#  - Type hints mazo      #
-#  - Observadores         #
-#  - Singleton            #
-#  - Factory              #
-#  - Strategy             #
-#  - Builder              #
-#  - Iterator custom      #
-#  - Memoización          #
-#  - Caching LRU          #
-#  - Pipeline             #
-#  - Curry                #
-#  - Composición          #
+#  v6.0 YA esta HECHO!!!  #
+#  + 150 COMANDOS NUEVOS  #
+#  NO SE QUE MAS DECIR    #
+#  YA NO GASTES DINERO    #
+#  EN EL MAZO!!!          #
 # ======================= #
 
 import sys
@@ -52,6 +21,45 @@ import base64
 import statistics
 import itertools
 import functools
+import threading
+import csv
+import pickle
+import sqlite3
+import zipfile
+import gzip
+import bz2
+import tarfile
+import shutil
+import subprocess
+import platform
+import urllib.request
+import urllib.parse
+import urllib.error
+import smtplib
+import socket
+import uuid
+import secrets
+import textwrap
+import string
+import unicodedata
+import difflib
+import colorsys
+import calendar
+import decimal
+import fractions
+import copy
+import struct
+import binascii
+import hmac
+import zlib
+import getpass
+import glob
+import heapq
+import queue
+from collections import deque, Counter, defaultdict, OrderedDict, namedtuple
+from email.mime.text import MIMEText
+from functools import lru_cache, reduce
+from itertools import combinations, permutations, product, chain, groupby
 
 # =========================
 # ESTADO GLOBAL
@@ -97,6 +105,46 @@ iteradores_mazo = {}
 lambdas_mazo = {}
 enums_mazo = {}
 dataclasses_mazo = {}
+
+# v5.5 — ESTADO NUEVO
+boveda_mazo = {}          # bóveda secreta mazónica
+pociones_mazo = {}        # pociones con efectos
+encantamientos_mazo = {}  # encantamientos para funciones
+mobs_mazo = {}            # mobs del mazo
+mazmorras_mazo = {}       # mazmorras
+logros_mazo = set()       # logros desbloqueados
+inventario_mazo = {}      # inventario por jugador
+trades_mazo = {}          # trades con aldeanos
+recetas_mazo = {}         # recetas de crafteo
+encantamientos_items = {}
+hechizos_mazo = {}
+clanes_mazo = {}
+rankings_mazo = {}
+torneos_mazo = {}
+apuestas_mazo = {}
+contratos_mazo = {}
+misiones_mazo = {}
+logros_secretos = {}
+chismes_mazo = []
+rumores_mazo = []
+burlas_mazo = [
+    "¿Otra vez con el mazo? Ya no gastes dinero en el mazo 🪓",
+    "El mazo de Minecraft quedó inservible desde la lanza... ni lo intentes",
+    "Ese mazo ya no sirve, mejor gasta el dinero en pociones 🧪",
+    "Un mazo sin filo es como un día sin creeper explotando",
+    "Ese mazo era legendario... hasta que llegó la lanza 🪓→🗡️",
+]
+packs_mazo = {}
+logros_def = {
+    "primermazo": "Creaste tu primer mazo",
+    "cazador": "Mataste 10 mobs mazónicos",
+    "minero": "Excavaste 100 bloques de la bóveda",
+    "encantador": "Encantaste un mazo",
+    "trader": "Hiciste 5 trades con aldeanos",
+    "explorador": "Exploraste una mazmorra",
+    "jefe_final": "Derrotaste al jefe del mazo (la lanza)",
+    "sin_dinero": "Ya no gastaste dinero en el mazo",
+}
 
 # =========================
 # COLORES
@@ -162,6 +210,9 @@ def _merge(a, b):
     resultado.extend(a[i:]); resultado.extend(b[j:])
     return resultado
 
+def _nums(texto):
+    return [float(x) for x in resolver_variables(texto).split(",")]
+
 def cond(c):
     try:
         c = resolver_variables(c).strip()
@@ -173,7 +224,6 @@ def cond(c):
             return any(cond(p) for p in partes)
         if c.startswith("nomazo2 "):
             return not cond(c[8:].strip())
-
         if c.startswith("estamazo "):
             return c[9:].strip() in variables or c[9:].strip() in listas
         if c.startswith("vaciomazo "):
@@ -183,24 +233,20 @@ def cond(c):
             try:
                 resto = c[13:].strip()
                 lst, val = resto.split("->", 1)
-                lst = lst.strip()
-                val = val.strip()
+                lst = lst.strip(); val = val.strip()
                 if lst in listas:
                     return val in listas[lst]
                 return val in lst
             except: return False
         if c.startswith("esnumeromazo "):
             try:
-                float(c[13:].strip())
-                return True
+                float(c[13:].strip()); return True
             except: return False
-
         c2 = c.replace(" ", "")
         op = None
         for oper in ["==", "!=", ">=", "<=", ">", "<"]:
             if oper in c2:
-                op = oper
-                break
+                op = oper; break
         if not op:
             return False
         a, b = c2.split(op, 1)
@@ -275,8 +321,7 @@ def ejecutar(linea):
             eliminado = False
             for d in [variables, listas, diccionarios, sets_mazo, stacks_mazo, queues_mazo]:
                 if t in d:
-                    del d[t]
-                    eliminado = True
+                    del d[t]; eliminado = True
             if eliminado:
                 print(f"🗑 mazo '{t}' eliminado")
             else:
@@ -286,16 +331,12 @@ def ejecutar(linea):
         t = extraer(linea, "cambiamazo:")
         try:
             n, tipo = t.split("->", 1)
-            n = n.strip()
-            tipo = tipo.strip()
+            n = n.strip(); tipo = tipo.strip()
             if n in variables:
                 v = variables[n]
-                if tipo == "numero":
-                    variables[n] = float(v)
-                elif tipo == "texto":
-                    variables[n] = str(v)
-                elif tipo == "booleano":
-                    variables[n] = str(v).lower() in ("yesmazo", "true", "1")
+                if tipo == "numero": variables[n] = float(v)
+                elif tipo == "texto": variables[n] = str(v)
+                elif tipo == "booleano": variables[n] = str(v).lower() in ("yesmazo", "true", "1")
                 print(f"🔄 '{n}' convertido a {tipo}")
         except: print("ERROR cambiamazo")
 
@@ -365,36 +406,24 @@ def ejecutar(linea):
             print("Potencia mazo:", float(a)**float(b))
         except: print("ERROR")
 
-    # =========================
-    # MATEMÁTICAS AVANZADAS
-    # =========================
     elif linea.startswith("mazopromedio:"):
         t = extraer(linea, "mazopromedio:")
-        try:
-            t = resolver_variables(t)
-            nums = [float(x) for x in t.split(",")]
-            print("📊 Promedio mazo:", statistics.mean(nums))
+        try: print("📊 Promedio mazo:", statistics.mean(_nums(t)))
         except: print("ERROR promedio")
 
     elif linea.startswith("mazomediana:"):
         t = extraer(linea, "mazomediana:")
-        try:
-            nums = [float(x) for x in resolver_variables(t).split(",")]
-            print("📊 Mediana mazo:", statistics.median(nums))
+        try: print("📊 Mediana mazo:", statistics.median(_nums(t)))
         except: print("ERROR mediana")
 
     elif linea.startswith("mazomoda:"):
         t = extraer(linea, "mazomoda:")
-        try:
-            nums = [float(x) for x in resolver_variables(t).split(",")]
-            print("📊 Moda mazo:", statistics.mode(nums))
+        try: print("📊 Moda mazo:", statistics.mode(_nums(t)))
         except: print("ERROR moda")
 
     elif linea.startswith("mazodesviacion:"):
         t = extraer(linea, "mazodesviacion:")
-        try:
-            nums = [float(x) for x in resolver_variables(t).split(",")]
-            print("📊 Desviación mazo:", statistics.stdev(nums))
+        try: print("📊 Desviación mazo:", statistics.stdev(_nums(t)))
         except: print("ERROR desviación")
 
     elif linea.startswith("mazogcd:"):
@@ -413,8 +442,7 @@ def ejecutar(linea):
 
     elif linea.startswith("mazofactorial:"):
         t = extraer(linea, "mazofactorial:")
-        try:
-            print("🔢 Factorial mazo:", math.factorial(int(resolver_variables(t))))
+        try: print("🔢 Factorial mazo:", math.factorial(int(resolver_variables(t))))
         except: print("ERROR factorial")
 
     elif linea.startswith("mazoseno:"):
@@ -476,16 +504,14 @@ def ejecutar(linea):
         if t in listas:
             random.shuffle(listas[t])
             print("🔀 Mezclado:", listas[t])
-        else:
-            print("no existe esa lista")
+        else: print("no existe esa lista")
 
     elif linea.startswith("mazoelegir:"):
         t = extraer(linea, "mazoelegir:")
         t = t.strip()
         if t in listas:
             print("🎯 Elegido mazo:", random.choice(listas[t]))
-        else:
-            print("no existe")
+        else: print("no existe")
 
     elif linea.startswith("mazomuestra:"):
         t = extraer(linea, "mazomuestra:")
@@ -603,27 +629,20 @@ def ejecutar(linea):
                 print(f"  [{i}] {v}")
         else: print("no existe")
 
-    # =========================
-    # LISTAS AVANZADAS
-    # =========================
     elif linea.startswith("mazordena:"):
         t = extraer(linea, "mazordena:")
         t = t.strip()
         if t in listas:
-            try:
-                listas[t] = sorted(listas[t], key=lambda x: float(x))
-            except:
-                listas[t] = sorted(listas[t])
+            try: listas[t] = sorted(listas[t], key=lambda x: float(x))
+            except: listas[t] = sorted(listas[t])
             print("🔤 Ordenado mazo:", listas[t])
 
     elif linea.startswith("mazordenaa:"):
         t = extraer(linea, "mazordenaa:")
         t = t.strip()
         if t in listas:
-            try:
-                listas[t] = sorted(listas[t], key=lambda x: float(x), reverse=True)
-            except:
-                listas[t] = sorted(listas[t], reverse=True)
+            try: listas[t] = sorted(listas[t], key=lambda x: float(x), reverse=True)
+            except: listas[t] = sorted(listas[t], reverse=True)
             print("🔤 Ordenado desc mazo:", listas[t])
 
     elif linea.startswith("mazoinvierte:"):
@@ -637,8 +656,7 @@ def ejecutar(linea):
         t = extraer(linea, "mazobusca:")
         try:
             n, v = t.split(",")
-            n = n.strip()
-            v = v.strip()
+            n = n.strip(); v = v.strip()
             if n in listas:
                 if v in listas[n]:
                     print(f"🔍 Encontrado en índice {listas[n].index(v)}")
@@ -650,8 +668,7 @@ def ejecutar(linea):
         t = extraer(linea, "mazocuenta:")
         try:
             n, v = t.split(",")
-            n = n.strip()
-            v = v.strip()
+            n = n.strip(); v = v.strip()
             if n in listas:
                 print(f"🔢 Aparece {listas[n].count(v)} veces")
         except: print("ERROR cuenta")
@@ -660,8 +677,7 @@ def ejecutar(linea):
         t = extraer(linea, "mazosuma:")
         t = t.strip()
         if t in listas:
-            try:
-                print("∑ mazo:", sum(float(x) for x in listas[t]))
+            try: print("∑ mazo:", sum(float(x) for x in listas[t]))
             except: print("ERROR suma")
 
     elif linea.startswith("mazomin:"):
@@ -682,8 +698,7 @@ def ejecutar(linea):
         t = extraer(linea, "mazofiltra:")
         try:
             n, c = t.split("->", 1)
-            n = n.strip()
-            c = c.strip()
+            n = n.strip(); c = c.strip()
             if n in listas:
                 resultado = []
                 for item in listas[n]:
@@ -698,8 +713,7 @@ def ejecutar(linea):
         t = extraer(linea, "mazomapea:")
         try:
             n, cmd = t.split("->", 1)
-            n = n.strip()
-            cmd = cmd.strip()
+            n = n.strip(); cmd = cmd.strip()
             if n in listas:
                 resultado = []
                 for item in listas[n]:
@@ -1304,8 +1318,7 @@ def ejecutar(linea):
     # =========================
     elif linea.startswith("mazoejecuta:"):
         t = extraer(linea, "mazoejecuta:")
-        try:
-            os.system(resolver_variables(t))
+        try: os.system(resolver_variables(t))
         except Exception as e: print("ERROR ejecuta:", e)
 
     elif linea.startswith("mazoentorno:"):
@@ -1365,7 +1378,7 @@ def ejecutar(linea):
         t = extraer(linea, "mazoel:")
         try:
             name, code = t.split("=", 1)
-            store[name.strip()] = {"code": code.strip(), "version": "5.0"}
+            store[name.strip()] = {"code": code.strip(), "version": "5.5"}
             print("📦 app guardada:", name.strip())
         except: print("ERROR")
 
@@ -1383,7 +1396,7 @@ def ejecutar(linea):
         for k in store: print("-", k)
 
     # =========================
-    # ARCHIVOS
+    # ARCHIVOS MAZO
     # =========================
     elif linea.startswith("guardarmazo:"):
         t = extraer(linea, "guardarmazo:")
@@ -1442,14 +1455,11 @@ def ejecutar(linea):
         try:
             n, inicio = t.split(",")
             n = n.strip(); inicio = inicio.strip()
-            visitados = set()
-            cola = [inicio]
-            orden = []
+            visitados = set(); cola = [inicio]; orden = []
             while cola:
                 v = cola.pop(0)
                 if v not in visitados:
-                    visitados.add(v)
-                    orden.append(v)
+                    visitados.add(v); orden.append(v)
                     cola.extend(grafos_mazo[n].get(v, []))
             print(f"🔍 BFS mazo: {orden}")
         except: print("ERROR bfs")
@@ -1459,12 +1469,10 @@ def ejecutar(linea):
         try:
             n, inicio = t.split(",")
             n = n.strip(); inicio = inicio.strip()
-            visitados = set()
-            orden = []
+            visitados = set(); orden = []
             def dfs(v):
                 if v in visitados: return
-                visitados.add(v)
-                orden.append(v)
+                visitados.add(v); orden.append(v)
                 for vecino in grafos_mazo[n].get(v, []):
                     dfs(vecino)
             dfs(inicio)
@@ -1474,7 +1482,6 @@ def ejecutar(linea):
     elif linea.startswith("mazodijkstra:"):
         t = extraer(linea, "mazodijkstra:")
         try:
-            import heapq
             n, resto = t.split(",")
             inicio, fin = resto.split("->")
             n = n.strip(); inicio = inicio.strip(); fin = fin.strip()
@@ -1533,9 +1540,7 @@ def ejecutar(linea):
         resultado = []
         def inorden(nodo):
             if nodo:
-                inorden(nodo["izq"])
-                resultado.append(nodo["raiz"])
-                inorden(nodo["der"])
+                inorden(nodo["izq"]); resultado.append(nodo["raiz"]); inorden(nodo["der"])
         inorden(arboles_mazo.get(n))
         print(f"🌳 Inorden mazo: {resultado}")
 
@@ -1597,8 +1602,7 @@ def ejecutar(linea):
             n = n.strip(); k = k.strip()
             cache = caches_mazo[n]
             if k in cache["items"]:
-                v = cache["items"].pop(k)
-                cache["items"][k] = v
+                v = cache["items"].pop(k); cache["items"][k] = v
                 print(f"💾 Cache hit: {v}")
             else:
                 print("💾 Cache miss mazo")
@@ -1726,8 +1730,7 @@ def ejecutar(linea):
                 ejecutar(singletons_mazo[n]["cmd"])
                 singletons_mazo[n]["creado"] = True
             print(f"🔒 Instancia singleton '{n}'")
-        else:
-            print("singleton no existe")
+        else: print("singleton no existe")
 
     # =========================
     # v5.0 — BÚSQUEDA BINARIA
@@ -1743,18 +1746,13 @@ def ejecutar(linea):
             while lo <= hi:
                 mid = (lo + hi) // 2
                 if str(arr[mid]) == v:
-                    encontrado = mid
-                    break
+                    encontrado = mid; break
                 try:
-                    if float(arr[mid]) < float(v):
-                        lo = mid + 1
-                    else:
-                        hi = mid - 1
+                    if float(arr[mid]) < float(v): lo = mid + 1
+                    else: hi = mid - 1
                 except:
-                    if arr[mid] < v:
-                        lo = mid + 1
-                    else:
-                        hi = mid - 1
+                    if arr[mid] < v: lo = mid + 1
+                    else: hi = mid - 1
             print(f"🔍 Búsqueda binaria: índice {encontrado}")
         except Exception as e: print("ERROR binaria:", e)
 
@@ -1798,11 +1796,9 @@ def ejecutar(linea):
         t = extraer(linea, "mazofibonacci:")
         try:
             n = int(resolver_variables(t))
-            a, b = 0, 1
-            seq = []
+            a, b = 0, 1; seq = []
             for _ in range(n):
-                seq.append(a)
-                a, b = b, a + b
+                seq.append(a); a, b = b, a + b
             print(f"🌀 Fibonacci mazo: {seq}")
         except: print("ERROR fibonacci")
 
@@ -1848,13 +1844,11 @@ def ejecutar(linea):
     # v5.0 — HILOS
     # =========================
     elif linea.startswith("mazohilo:"):
-        import threading
         t = extraer(linea, "mazohilo:")
         try:
             n, cmd = t.split("=", 1)
             n = n.strip()
-            def worker():
-                ejecutar(cmd.strip())
+            def worker(): ejecutar(cmd.strip())
             hilos_mazo[n] = threading.Thread(target=worker)
             hilos_mazo[n].start()
             print(f"🧵 Hilo '{n}' iniciado")
@@ -1883,8 +1877,7 @@ def ejecutar(linea):
         t = extraer(linea, "mazoawait:")
         n = t.strip()
         if n in async_mazo:
-            async def correr():
-                ejecutar(async_mazo[n])
+            async def correr(): ejecutar(async_mazo[n])
             asyncio.run(correr())
             print(f"⚡ Async '{n}' completado")
 
@@ -1998,10 +1991,8 @@ def ejecutar(linea):
         try:
             dec, fn = t.split(",", 1)
             dec = dec.strip(); fn = fn.strip()
-            if dec in decoradores_mazo:
-                ejecutar(decoradores_mazo[dec])
-            if fn in funciones:
-                ejecutar(funciones[fn])
+            if dec in decoradores_mazo: ejecutar(decoradores_mazo[dec])
+            if fn in funciones: ejecutar(funciones[fn])
             print(f"🎀 Función '{fn}' decorada con '{dec}'")
         except: print("ERROR decora")
 
@@ -2009,7 +2000,6 @@ def ejecutar(linea):
     # v5.0 — SQL
     # =========================
     elif linea.startswith("mazosql:"):
-        import sqlite3
         t = extraer(linea, "mazosql:")
         try:
             db, query = t.split(",", 1)
@@ -2030,25 +2020,21 @@ def ejecutar(linea):
     # v5.0 — PICKLE
     # =========================
     elif linea.startswith("mazopickle:"):
-        import pickle
         t = extraer(linea, "mazopickle:")
         try:
             n, archivo = t.split(",")
             n = n.strip(); archivo = archivo.strip()
             datos = listas.get(n) or diccionarios.get(n) or variables.get(n)
-            with open(archivo, "wb") as f:
-                pickle.dump(datos, f)
+            with open(archivo, "wb") as f: pickle.dump(datos, f)
             print(f"📦 Pickle guardado en {archivo}")
         except Exception as e: print("ERROR pickle:", e)
 
     elif linea.startswith("mazounpickle:"):
-        import pickle
         t = extraer(linea, "mazounpickle:")
         try:
             n, archivo = t.split(",")
             n = n.strip(); archivo = archivo.strip()
-            with open(archivo, "rb") as f:
-                datos = pickle.load(f)
+            with open(archivo, "rb") as f: datos = pickle.load(f)
             if isinstance(datos, list): listas[n] = datos
             elif isinstance(datos, dict): diccionarios[n] = datos
             else: variables[n] = datos
@@ -2059,23 +2045,19 @@ def ejecutar(linea):
     # v5.0 — ZIP
     # =========================
     elif linea.startswith("mazozip:"):
-        import zipfile
         t = extraer(linea, "mazozip:")
         try:
             zip_name, archivos = t.split(",", 1)
             with zipfile.ZipFile(zip_name.strip(), "w") as z:
-                for a in archivos.split("|"):
-                    z.write(a.strip())
+                for a in archivos.split("|"): z.write(a.strip())
             print(f"🗜️ ZIP mazo creado: {zip_name.strip()}")
         except Exception as e: print("ERROR zip:", e)
 
     elif linea.startswith("mazounzip:"):
-        import zipfile
         t = extraer(linea, "mazounzip:")
         try:
             zip_name, destino = t.split(",")
-            with zipfile.ZipFile(zip_name.strip(), "r") as z:
-                z.extractall(destino.strip())
+            with zipfile.ZipFile(zip_name.strip(), "r") as z: z.extractall(destino.strip())
             print(f"🗜️ ZIP mazo extraído en {destino.strip()}")
         except Exception as e: print("ERROR unzip:", e)
 
@@ -2083,7 +2065,6 @@ def ejecutar(linea):
     # v5.0 — CSV
     # =========================
     elif linea.startswith("mazocsvlee:"):
-        import csv
         t = extraer(linea, "mazocsvlee:")
         try:
             n, archivo = t.split(",")
@@ -2094,14 +2075,12 @@ def ejecutar(linea):
         except Exception as e: print("ERROR csv:", e)
 
     elif linea.startswith("mazocsvescribe:"):
-        import csv
         t = extraer(linea, "mazocsvescribe:")
         try:
             n, archivo = t.split(",")
             n = n.strip()
             with open(archivo.strip(), "w", newline="", encoding="utf-8") as f:
-                writer = csv.writer(f)
-                writer.writerows(listas[n])
+                writer = csv.writer(f); writer.writerows(listas[n])
             print(f"📊 CSV escrito: {archivo.strip()}")
         except Exception as e: print("ERROR csv:", e)
 
@@ -2110,7 +2089,6 @@ def ejecutar(linea):
     # =========================
     elif linea.startswith("mazohttp:"):
         try:
-            import urllib.request
             t = extraer(linea, "mazohttp:")
             url = resolver_variables(t.strip())
             with urllib.request.urlopen(url, timeout=10) as r:
@@ -2121,7 +2099,6 @@ def ejecutar(linea):
 
     elif linea.startswith("mazohttppost:"):
         try:
-            import urllib.request, urllib.parse
             t = extraer(linea, "mazohttppost:")
             url, data = t.split(",", 1)
             data_enc = urllib.parse.urlencode({"data": data.strip()}).encode()
@@ -2136,8 +2113,7 @@ def ejecutar(linea):
         t = extraer(linea, "mazohttpguarda:")
         try:
             if "_http" in variables:
-                with open(t.strip(), "w", encoding="utf-8") as f:
-                    f.write(variables["_http"])
+                with open(t.strip(), "w", encoding="utf-8") as f: f.write(variables["_http"])
                 print(f"💾 HTTP guardado en {t.strip()}")
         except Exception as e: print("ERROR httpguarda:", e)
 
@@ -2146,7 +2122,6 @@ def ejecutar(linea):
     # =========================
     elif linea.startswith("mazoscrap:"):
         try:
-            import urllib.request
             t = extraer(linea, "mazoscrap:")
             url, patron = t.split(",", 1)
             with urllib.request.urlopen(url.strip(), timeout=10) as r:
@@ -2159,8 +2134,6 @@ def ejecutar(linea):
     # v5.0 — CORREO
     # =========================
     elif linea.startswith("mazocorreo:"):
-        import smtplib
-        from email.mime.text import MIMEText
         t = extraer(linea, "mazocorreo:")
         try:
             smtp, resto = t.split(",", 1)
@@ -2172,8 +2145,7 @@ def ejecutar(linea):
             msg["From"] = origen.strip()
             msg["To"] = destino.strip()
             with smtplib.SMTP(smtp.strip(), 587) as s:
-                s.starttls()
-                s.send_message(msg)
+                s.starttls(); s.send_message(msg)
             print(f"📧 Correo mazo enviado a {destino.strip()}")
         except Exception as e: print("ERROR correo:", e)
 
@@ -2184,8 +2156,7 @@ def ejecutar(linea):
         t = extraer(linea, "mazoaes:")
         try:
             txt, clave = t.split(",", 1)
-            txt = resolver_variables(txt.strip())
-            clave = clave.strip()
+            txt = resolver_variables(txt.strip()); clave = clave.strip()
             key_bytes = hashlib.sha256(clave.encode()).digest()
             cifrado = bytes([ord(c) ^ key_bytes[i % len(key_bytes)] for i, c in enumerate(txt)])
             print("🔐 AES mazo:", base64.b64encode(cifrado).decode())
@@ -2195,8 +2166,7 @@ def ejecutar(linea):
         t = extraer(linea, "mazodesaes:")
         try:
             b64, clave = t.split(",", 1)
-            b64 = resolver_variables(b64.strip())
-            clave = clave.strip()
+            b64 = resolver_variables(b64.strip()); clave = clave.strip()
             key_bytes = hashlib.sha256(clave.encode()).digest()
             cifrado = base64.b64decode(b64)
             descifrado = bytes([c ^ key_bytes[i % len(key_bytes)] for i, c in enumerate(cifrado)])
@@ -2258,10 +2228,8 @@ def ejecutar(linea):
         t = extraer(linea, "mazoiternext:")
         n = t.strip()
         if n in iteradores_mazo:
-            try:
-                print(f"🔄 Iter next mazo: {next(iteradores_mazo[n])}")
-            except StopIteration:
-                print("🔄 Iterador agotado mazo")
+            try: print(f"🔄 Iter next mazo: {next(iteradores_mazo[n])}")
+            except StopIteration: print("🔄 Iterador agotado mazo")
 
     # =========================
     # v5.0 — LAMBDAS
@@ -2300,8 +2268,7 @@ def ejecutar(linea):
                     patron, cmd = caso.split(":", 1)
                     patron = patron.strip()
                     if patron == "_" or patron == valor:
-                        ejecutar(cmd.strip())
-                        break
+                        ejecutar(cmd.strip()); break
         except: print("ERROR match")
 
     # =========================
@@ -2312,10 +2279,8 @@ def ejecutar(linea):
         try:
             setup, cuerpo, teardown = t.split("|", 2)
             ejecutar(setup.strip())
-            try:
-                ejecutar(cuerpo.strip())
-            finally:
-                ejecutar(teardown.strip())
+            try: ejecutar(cuerpo.strip())
+            finally: ejecutar(teardown.strip())
         except Exception as e: print("ERROR contexto:", e)
 
     # =========================
@@ -2365,6 +2330,823 @@ def ejecutar(linea):
                 print(f"📦 DataClass creada: {inst_name.strip()} = {diccionarios[inst_name.strip()]}")
         except: print("ERROR datacrea")
 
+    # ============================================================
+    # ============================================================
+    #       v5.5 — COMANDOS NUEVOS MAZÓNICOS 🪓
+    #       YA NO GASTES DINERO EN EL MAZO
+    #       (el mazo quedó inservible por la lanza)
+    # ============================================================
+    # ============================================================
+
+    # ---------- BURLA DEL MAZO ----------
+    elif linea.startswith("mazoburla:"):
+        t = extraer(linea, "mazoburla:")
+        if t:
+            variables["_last_burla"] = resolver_variables(t)
+        print(color("&a🪓 " + random.choice(burlas_mazo) + " &0"))
+
+    elif linea == "mazoburla":
+        print(color("&a🪓 " + random.choice(burlas_mazo) + " &0"))
+
+    elif linea.startswith("mazolanzo:"):
+        # La lanza que arruinó el mazo
+        t = extraer(linea, "mazolanzo:")
+        objetivo = resolver_variables(t).strip() if t else "el mazo"
+        daño = random.randint(50, 100)
+        print(color(f"&r🗡️ ¡La lanza ataca a {objetivo}! Daño: {daño} &0"))
+        if daño >= 90:
+            print(color("&r💥 El mazo quedó INSERVIBLE. YA NO GASTES DINERO EN EL MAZO. &0"))
+            logros_mazo.add("sin_dinero")
+
+    # ---------- BÓVEDA MAZÓNICA ----------
+    elif linea.startswith("mazoboveda:"):
+        t = extraer(linea, "mazoboveda:")
+        try:
+            n, v = t.split("=", 1)
+            boveda_mazo[n.strip()] = {"valor": resolver_variables(v.strip()), "tipo": "secreto"}
+            print(f"🏦 Guardado en bóveda: {n.strip()}")
+        except: print("ERROR boveda")
+
+    elif linea.startswith("mazobovedatoma:"):
+        t = extraer(linea, "mazobovedatoma:")
+        n = t.strip()
+        if n in boveda_mazo:
+            print(f"🏦 Bóveda[{n}] = {boveda_mazo[n]['valor']}")
+        else:
+            print("🔒 La bóveda está vacía o no existe esa llave mazo")
+
+    elif linea.startswith("mazobovedaborra:"):
+        t = extraer(linea, "mazobovedaborra:")
+        n = t.strip()
+        if n in boveda_mazo:
+            del boveda_mazo[n]
+            print(f"🗑️ Bóveda mazo: {n} eliminado")
+
+    elif linea == "mazoboveda":
+        print(f"🏦 Bóveda mazónica: {list(boveda_mazo.keys()) or '(vacía)'}")
+
+    # ---------- POCIONES ----------
+    elif linea.startswith("mazopocion:"):
+        t = extraer(linea, "mazopocion:")
+        try:
+            n, efecto = t.split("=", 1)
+            pociones_mazo[n.strip()] = {"efecto": efecto.strip(), "usada": False}
+            print(f"🧪 Poción '{n.strip()}' creada con efecto '{efecto.strip()}'")
+        except: print("ERROR pocion")
+
+    elif linea.startswith("mazotomapocion:"):
+        t = extraer(linea, "mazotoma pocion:".replace(" ", ""))
+        if t is None:
+            t = extraer(linea, "mazotomapocion:")
+        n = t.strip() if t else ""
+        if n in pociones_mazo:
+            p = pociones_mazo[n]
+            if p["usada"]:
+                print(f"🧪 Poción '{n}' ya fue usada, no gastes dinero en pociones usadas")
+            else:
+                p["usada"] = True
+                print(f"🧪 ¡Glup! Efecto '{p['efecto']}' activado")
+                # Aplica efecto si es una variable
+                if p["efecto"] in variables:
+                    print(f"✨ ${p['efecto']} se siente más fuerte")
+                else:
+                    variables["_" + n + "_efecto"] = p["efecto"]
+
+    elif linea == "mazopociones":
+        print(f"🧪 Pociones en el mazo: {list(pociones_mazo.keys()) or '(ninguna)'}")
+
+    # ---------- ENCANTAMIENTOS ----------
+    elif linea.startswith("mazoencanta:"):
+        t = extraer(linea, "mazoencanta:")
+        try:
+            item, enc = t.split(",", 1)
+            item = item.strip(); enc = enc.strip()
+            encantamientos_items.setdefault(item, []).append(enc)
+            print(f"✨ '{item}' encantado con '{enc}' (nivel mazónico)")
+        except: print("ERROR encanta")
+
+    elif linea.startswith("mazoverencantamiento:"):
+        t = extraer(linea, "mazoverencantamiento:")
+        item = t.strip()
+        if item in encantamientos_items:
+            print(f"✨ '{item}' tiene encantamientos: {encantamientos_items[item]}")
+        else:
+            print("✨ ese item no tiene encantamientos mazo")
+
+    elif linea == "mazoencantamientos":
+        print(f"✨ Items encantados: {encantamientos_items or '(ninguno)'}")
+
+    # ---------- MOBS ----------
+    elif linea.startswith("mazomob:"):
+        t = extraer(linea, "mazomob:")
+        try:
+            n, stats = t.split("=", 1)
+            mobs_mazo[n.strip()] = {
+                "vida": random.randint(10, 50),
+                "ataque": random.randint(1, 10),
+                "tipo": stats.strip() or "genérico"
+            }
+            print(f"👾 Mob '{n.strip()}' apareció ({mobs_mazo[n.strip()]['tipo']})")
+        except: print("ERROR mob")
+
+    elif linea.startswith("mazoatacamob:"):
+        t = extraer(linea, "mazoatacamob:")
+        try:
+            mob, daño = t.split(",")
+            mob = mob.strip(); daño = int(daño.strip())
+            if mob in mobs_mazo:
+                mobs_mazo[mob]["vida"] -= daño
+                if mobs_mazo[mob]["vida"] <= 0:
+                    print(f"💀 '{mob}' ha sido derrotado. Suelta 1 esmeralda mazo")
+                    del mobs_mazo[mob]
+                else:
+                    print(f"⚔️ '{mob}' recibió {daño}. Vida restante: {mobs_mazo[mob]['vida']}")
+        except: print("ERROR atacamob")
+
+    elif linea == "mazomobs":
+        if mobs_mazo:
+            for n, m in mobs_mazo.items():
+                print(f"👾 {n}: vida={m['vida']} ataque={m['ataque']} tipo={m['tipo']}")
+        else:
+            print("👾 No hay mobs en el mazo (todos se fueron por la lanza)")
+
+    # ---------- MAZMORRAS ----------
+    elif linea.startswith("mazmazmorra:"):
+        t = extraer(linea, "mazmazmorra:")
+        try:
+            n, dificultad = t.split("=", 1)
+            mazmorras_mazo[n.strip()] = {
+                "dificultad": dificultad.strip(),
+                "salas": random.randint(3, 10),
+                "tesoro": random.choice(["mazo", "lanza", "esmeralda", "poción", "nada"]),
+                "explorada": False
+            }
+            print(f"🏰 Mazmorra '{n.strip()}' generada (dificultad {dificultad.strip()})")
+        except: print("ERROR mazmorra")
+
+    elif linea.startswith("mazoexplora:"):
+        t = extraer(linea, "mazoexplora:")
+        n = t.strip()
+        if n in mazmorras_mazo:
+            m = mazmorras_mazo[n]
+            m["explorada"] = True
+            print(f"🗺️ Explorando '{n}' ({m['salas']} salas, dificultad {m['dificultad']})")
+            if m["tesoro"] == "lanza":
+                print(color("&r🗡️ ¡Encontraste la LANZA! El mazo ya no sirve. YA NO GASTES DINERO EN EL MAZO. &0"))
+                logros_mazo.add("explorador")
+                logros_mazo.add("sin_dinero")
+            else:
+                print(f"💰 Encontraste: {m['tesoro']}")
+                logros_mazo.add("explorador")
+
+    elif linea == "mazmazmorras" or linea == "mazmazmorras:":
+        print(f"🏰 Mazmorras: {list(mazmorras_mazo.keys()) or '(ninguna)'}")
+
+    # ---------- LOGROS ----------
+    elif linea.startswith("mazologro:"):
+        t = extraer(linea, "mazologro:")
+        n = t.strip()
+        if n in logros_def:
+            logros_mazo.add(n)
+            print(f"🏆 ¡LOGRO DESBLOQUEADO! {logros_def[n]}")
+        else:
+            logros_mazo.add(n)
+            print(f"🏆 Logro '{n}' desbloqueado (misterioso)")
+
+    elif linea == "mazologros":
+        if logros_mazo:
+            print(f"🏆 Logros ({len(logros_mazo)}):")
+            for l in logros_mazo:
+                desc = logros_def.get(l, "logro secreto del mazo")
+                print(f"  ✅ {l}: {desc}")
+        else:
+            print("🏆 Sin logros todavía. Sigue mazando")
+
+    elif linea == "mazologrosdef":
+        for k, v in logros_def.items():
+            estado = "✅" if k in logros_mazo else "🔒"
+            print(f"  {estado} {k}: {v}")
+
+    # ---------- INVENTARIO ----------
+    elif linea.startswith("mazoinv:"):
+        t = extraer(linea, "mazoinv:")
+        jugador = t.strip()
+        inventario_mazo.setdefault(jugador, {})
+        print(f"🎒 Inventario de '{jugador}' creado")
+
+    elif linea.startswith("mazoinvpon:"):
+        t = extraer(linea, "mazoinvpon:")
+        try:
+            jug, resto = t.split(",", 1)
+            item, cant = resto.split("->")
+            jug = jug.strip(); item = item.strip(); cant = int(cant.strip())
+            inventario_mazo.setdefault(jug, {})
+            inventario_mazo[jug][item] = inventario_mazo[jug].get(item, 0) + cant
+            print(f"🎒 +{cant} {item} a {jug}")
+        except: print("ERROR invpon")
+
+    elif linea.startswith("mazoinvtoma:"):
+        t = extraer(linea, "mazoinvtoma:")
+        try:
+            jug, resto = t.split(",", 1)
+            item, cant = resto.split("->")
+            jug = jug.strip(); item = item.strip(); cant = int(cant.strip())
+            if inventario_mazo.get(jug, {}).get(item, 0) >= cant:
+                inventario_mazo[jug][item] -= cant
+                if inventario_mazo[jug][item] <= 0:
+                    del inventario_mazo[jug][item]
+                print(f"🎒 -{cant} {item} de {jug}")
+            else:
+                print("🎒 No tienes suficientes (ni gastes dinero en el mazo)")
+        except: print("ERROR invtoma")
+
+    elif linea.startswith("mazoinvver:"):
+        t = extraer(linea, "mazoinvver:")
+        jug = t.strip()
+        if jug in inventario_mazo:
+            print(f"🎒 Inventario de '{jug}':")
+            for item, cant in inventario_mazo[jug].items():
+                print(f"  {item} x{cant}")
+        else:
+            print("🎒 inventario vacío")
+
+    # ---------- TRADES ----------
+    elif linea.startswith("mazotrade:"):
+        t = extraer(linea, "mazotrade:")
+        try:
+            n, resto = t.split("=", 1)
+            da, recibo = resto.split("->")
+            trades_mazo[n.strip()] = {
+                "das": da.strip(),
+                "recibes": recibo.strip(),
+                "usos": 0
+            }
+            print(f"🤝 Trade '{n.strip()}' registrado: {da.strip()} → {recibo.strip()}")
+        except: print("ERROR trade")
+
+    elif linea.startswith("mazotradehaz:"):
+        t = extraer(linea, "mazotradehaz:")
+        try:
+            n, jug = t.split(",")
+            n = n.strip(); jug = jug.strip()
+            if n in trades_mazo:
+                tr = trades_mazo[n]
+                inv = inventario_mazo.setdefault(jug, {})
+                inv[tr["recibes"]] = inv.get(tr["recibes"], 0) + 1
+                tr["usos"] += 1
+                print(f"🤝 Trade hecho: {tr['das']} → {tr['recibes']}")
+                if tr["usos"] >= 5:
+                    logros_mazo.add("trader")
+        except: print("ERROR tradehaz")
+
+    elif linea == "mazotrades":
+        for n, t in trades_mazo.items():
+            print(f"  🤝 {n}: {t['das']} → {t['recibes']} (usos: {t['usos']})")
+
+    # ---------- RECETAS ----------
+    elif linea.startswith("mazoreceta:"):
+        t = extraer(linea, "mazoreceta:")
+        try:
+            n, resto = t.split("=", 1)
+            ingredientes, resultado = resto.split("->")
+            recetas_mazo[n.strip()] = {
+                "ingredientes": [i.strip() for i in ingredientes.split("+")],
+                "resultado": resultado.strip()
+            }
+            print(f"📜 Receta '{n.strip()}': {' + '.join(recetas_mazo[n.strip()]['ingredientes'])} = {resultado.strip()}")
+        except: print("ERROR receta")
+
+    elif linea.startswith("mazocraftea:"):
+        t = extraer(linea, "mazocraftea:")
+        try:
+            n, jug = t.split(",")
+            n = n.strip(); jug = jug.strip()
+            if n in recetas_mazo:
+                r = recetas_mazo[n]
+                inv = inventario_mazo.setdefault(jug, {})
+                puede = all(inv.get(ing, 0) > 0 for ing in r["ingredientes"])
+                if puede:
+                    for ing in r["ingredientes"]:
+                        inv[ing] -= 1
+                        if inv[ing] <= 0: del inv[ing]
+                    inv[r["resultado"]] = inv.get(r["resultado"], 0) + 1
+                    print(f"⚒️ Crafteaste: {r['resultado']}")
+                else:
+                    print("⚒️ No tienes los ingredientes, y no gastes dinero en el mazo")
+        except: print("ERROR craftea")
+
+    elif linea == "mazorecetas":
+        for n, r in recetas_mazo.items():
+            print(f"  📜 {n}: {' + '.join(r['ingredientes'])} = {r['resultado']}")
+
+    # ---------- HECHIZOS ----------
+    elif linea.startswith("mazohechizo:"):
+        t = extraer(linea, "mazohechizo:")
+        try:
+            n, poder = t.split("=", 1)
+            hechizos_mazo[n.strip()] = {
+                "poder": random.randint(1, 100),
+                "formula": poder.strip()
+            }
+            print(f"🪄 Hechizo '{n.strip()}' aprendido (poder {hechizos_mazo[n.strip()]['poder']})")
+        except: print("ERROR hechizo")
+
+    elif linea.startswith("mazolanzahechizo:"):
+        t = extraer(linea, "mazolanzahechizo:")
+        n = t.strip()
+        if n in hechizos_mazo:
+            print(f"🪄 Lanzas '{n}' con poder {hechizos_mazo[n]['poder']}...")
+            if hechizos_mazo[n]["poder"] > 80:
+                print(color("&r💥 ¡La lanza supera al mazo! YA NO GASTES DINERO EN EL MAZO. &0"))
+                logros_mazo.add("sin_dinero")
+            else:
+                print("✨ El hechizo hace ¡poof! pero no mucho más")
+        else:
+            print("🪄 Ese hechizo no existe en tu grimorio mazo")
+
+    elif linea == "mazohechizos":
+        for n, h in hechizos_mazo.items():
+            print(f"  🪄 {n}: poder {h['poder']}")
+
+    # ---------- CLANES ----------
+    elif linea.startswith("mazoclan:"):
+        t = extraer(linea, "mazoclan:")
+        try:
+            n, jefe = t.split("=", 1)
+            clanes_mazo[n.strip()] = {"jefe": jefe.strip(), "miembros": [jefe.strip()]}
+            print(f"⚔️ Clan '{n.strip()}' fundado por {jefe.strip()}")
+        except: print("ERROR clan")
+
+    elif linea.startswith("mazoclanune:"):
+        t = extraer(linea, "mazoclanune:")
+        try:
+            n, jug = t.split(",")
+            n = n.strip(); jug = jug.strip()
+            if n in clanes_mazo:
+                clanes_mazo[n]["miembros"].append(jug)
+                print(f"⚔️ '{jug}' se unió al clan '{n}'")
+        except: print("ERROR clanune")
+
+    elif linea == "mazoclanes":
+        for n, c in clanes_mazo.items():
+            print(f"  ⚔️ {n} (jefe: {c['jefe']}, {len(c['miembros'])} miembros)")
+
+    # ---------- RANKINGS ----------
+    elif linea.startswith("mazorankingpon:"):
+        t = extraer(linea, "mazorankingpon:")
+        try:
+            jug, punt = t.split(",")
+            rankings_mazo[jug.strip()] = float(punt.strip())
+            print(f"🏅 Ranking actualizado: {jug.strip()} = {punt.strip()}")
+        except: print("ERROR rankingpon")
+
+    elif linea == "mazoranking":
+        if rankings_mazo:
+            orden = sorted(rankings_mazo.items(), key=lambda x: x[1], reverse=True)
+            print("🏅 RANKING MAZÓNICO:")
+            for i, (j, p) in enumerate(orden, 1):
+                print(f"  {i}. {j}: {p}")
+        else:
+            print("🏅 Nadie en el ranking. Todos gastaron dinero en el mazo")
+
+    # ---------- TORNEOS ----------
+    elif linea.startswith("mazotorneo:"):
+        t = extraer(linea, "mazotorneo:")
+        try:
+            n, jugadores = t.split("=", 1)
+            torneos_mazo[n.strip()] = {
+                "jugadores": [j.strip() for j in jugadores.split(",")],
+                "ganador": None
+            }
+            print(f"🏆 Torneo '{n.strip()}' con {len(torneos_mazo[n.strip()]['jugadores'])} participantes")
+        except: print("ERROR torneo")
+
+    elif linea.startswith("mazotorneojuega:"):
+        t = extraer(linea, "mazotorneojuega:")
+        n = t.strip()
+        if n in torneos_mazo:
+            jugadores = torneos_mazo[n]["jugadores"]
+            if len(jugadores) < 2:
+                print("🏆 Se necesitan al menos 2 para el torneo")
+            else:
+                ganador = random.choice(jugadores)
+                torneos_mazo[n]["ganador"] = ganador
+                print(f"🏆 ¡{ganador} gana el torneo '{n}'! (no por usar el mazo, obvio)")
+
+    elif linea == "mazotorneos":
+        for n, t in torneos_mazo.items():
+            print(f"  🏆 {n}: {t['jugadores']} → ganador: {t['ganador'] or 'por jugar'}")
+
+    # ---------- APUESTAS ----------
+    elif linea.startswith("mazoapuesta:"):
+        t = extraer(linea, "mazoapuesta:")
+        try:
+            n, resto = t.split("=", 1)
+            monto, opcion = resto.split("->")
+            apuestas_mazo[n.strip()] = {
+                "monto": float(monto.strip()),
+                "opcion": opcion.strip(),
+                "resultado": None
+            }
+            print(f"💰 Apuesta '{n.strip()}': {monto.strip()} a '{opcion.strip()}'")
+        except: print("ERROR apuesta")
+
+    elif linea.startswith("mazoresuelveapuesta:"):
+        t = extraer(linea, "mazoresuelveapuesta:")
+        try:
+            n, resultado = t.split(",")
+            n = n.strip(); resultado = resultado.strip()
+            if n in apuestas_mazo:
+                ap = apuestas_mazo[n]
+                ap["resultado"] = resultado
+                if ap["opcion"] == resultado:
+                    premio = ap["monto"] * 2
+                    print(f"💰 ¡Ganaste {premio}! (nunca apuestes el mazo)")
+                else:
+                    print(f"💸 Perdiste {ap['monto']}. Ni modo, ya no gastes dinero en el mazo")
+        except: print("ERROR resuelveapuesta")
+
+    elif linea == "mazoapuestas":
+        for n, a in apuestas_mazo.items():
+            print(f"  💰 {n}: {a['monto']} a '{a['opcion']}' → {a['resultado'] or 'pendiente'}")
+
+    # ---------- CONTRATOS ----------
+    elif linea.startswith("mazocontrato:"):
+        t = extraer(linea, "mazocontrato:")
+        try:
+            n, resto = t.split("=", 1)
+            quien, recompensa = resto.split("->")
+            contratos_mazo[n.strip()] = {
+                "quien": quien.strip(),
+                "recompensa": recompensa.strip(),
+                "cumplido": False
+            }
+            print(f"📜 Contrato '{n.strip()}' con '{quien.strip()}' por '{recompensa.strip()}'")
+        except: print("ERROR contrato")
+
+    elif linea.startswith("mazocumple:"):
+        t = extraer(linea, "mazocumple:")
+        n = t.strip()
+        if n in contratos_mazo:
+            contratos_mazo[n]["cumplido"] = True
+            print(f"📜 Contrato '{n}' cumplido. Recompensa: {contratos_mazo[n]['recompensa']}")
+
+    elif linea == "mazocontratos":
+        for n, c in contratos_mazo.items():
+            estado = "✅" if c["cumplido"] else "⏳"
+            print(f"  {estado} {n}: {c['quien']} → {c['recompensa']}")
+
+    # ---------- MISIONES ----------
+    elif linea.startswith("mazomision:"):
+        t = extraer(linea, "mazomision:")
+        try:
+            n, objetivo = t.split("=", 1)
+            misiones_mazo[n.strip()] = {
+                "objetivo": objetivo.strip(),
+                "progreso": 0,
+                "completada": False
+            }
+            print(f"📋 Misión '{n.strip()}': {objetivo.strip()}")
+        except: print("ERROR mision")
+
+    elif linea.startswith("mazomisionavanza:"):
+        t = extraer(linea, "mazomisionavanza:")
+        try:
+            n, cant = t.split(",")
+            n = n.strip(); cant = int(cant.strip())
+            if n in misiones_mazo:
+                misiones_mazo[n]["progreso"] += cant
+                print(f"📋 Progreso '{n}': {misiones_mazo[n]['progreso']}")
+                if misiones_mazo[n]["progreso"] >= 10:
+                    misiones_mazo[n]["completada"] = True
+                    print(f"✅ ¡Misión '{n}' completada!")
+        except: print("ERROR misionavanza")
+
+    elif linea == "mazomisiones":
+        for n, m in misiones_mazo.items():
+            est = "✅" if m["completada"] else "⏳"
+            print(f"  {est} {n}: {m['objetivo']} ({m['progreso']}/10)")
+
+    # ---------- LOGROS SECRETOS ----------
+    elif linea.startswith("mazosecreto:"):
+        t = extraer(linea, "mazosecreto:")
+        try:
+            n, pista = t.split("=", 1)
+            logros_secretos[n.strip()] = pista.strip()
+            print(f"🤫 Logro secreto '{n.strip()}' registrado (pista: {pista.strip()})")
+        except: print("ERROR secreto")
+
+    elif linea.startswith("mazodesbloqueasecreto:"):
+        t = extraer(linea, "mazodesbloqueasecreto:")
+        n = t.strip()
+        if n in logros_secretos:
+            logros_mazo.add(n)
+            print(f"🤫 ¡Descubriste el secreto '{n}'! {logros_secretos[n]}")
+
+    elif linea == "mazosecretos":
+        print(f"🤫 Secretos conocidos: {list(logros_secretos.keys()) or '(ninguno)'}")
+        print(f"🤫 Secretos desbloqueados: {[s for s in logros_secretos if s in logros_mazo] or '(ninguno)'}")
+
+    # ---------- CHISMES / RUMORES ----------
+    elif linea.startswith("mazochisme:"):
+        t = extraer(linea, "mazochisme:")
+        chismes_mazo.append(resolver_variables(t))
+        print(f"👀 Chisme añadido al mazo (#{len(chismes_mazo)})")
+
+    elif linea == "mazochismes":
+        if chismes_mazo:
+            for i, c in enumerate(chismes_mazo[-5:], 1):
+                print(f"  👀 {i}. {c}")
+        else:
+            print("👀 No hay chismes, todos están minando con el mazo")
+
+    elif linea.startswith("mazorumor:"):
+        t = extraer(linea, "mazorumor:")
+        rumores_mazo.append(resolver_variables(t))
+        print(f"🗣️ Rumor esparcido (#{len(rumores_mazo)})")
+
+    elif linea == "mazorrumores" or linea == "mazorumores":
+        if rumores_mazo:
+            for i, r in enumerate(rumores_mazo[-5:], 1):
+                print(f"  🗣️ {i}. {r}")
+        else:
+            print("🗣️ Sin rumores por ahora")
+
+    # ---------- PACKS ----------
+    elif linea.startswith("mazopack:"):
+        t = extraer(linea, "mazopack:")
+        try:
+            n, contenido = t.split("=", 1)
+            packs_mazo[n.strip()] = [x.strip() for x in contenido.split("|")]
+            print(f"🎁 Pack '{n.strip()}' creado con {len(packs_mazo[n.strip()])} cosas")
+        except: print("ERROR pack")
+
+    elif linea.startswith("mazopackabre:"):
+        t = extraer(linea, "mazopackabre:")
+        n = t.strip()
+        if n in packs_mazo:
+            print(f"🎁 Abriendo pack '{n}'...")
+            for item in packs_mazo[n]:
+                print(f"  ✨ Obtuviste: {item}")
+        else:
+            print("🎁 Ese pack no existe (ni lo compres, ya no gastes dinero)")
+
+    elif linea == "mazopacks":
+        for n, p in packs_mazo.items():
+            print(f"  🎁 {n}: {len(p)} items")
+
+    # ---------- MINAR / EXCAVAR (bóveda) ----------
+    elif linea.startswith("mazomina:"):
+        t = extraer(linea, "mazomina:")
+        try:
+            n, cant = t.split(",")
+            n = n.strip(); cant = int(cant.strip())
+            hallazgos = Counter(random.choice(["piedra","hierro","oro","diamante","esmeralda","mazo roto","lanza"])
+                                 for _ in range(cant))
+            print(f"⛏️ Minaste {cant} bloques en '{n}':")
+            for item, num in hallazgos.items():
+                print(f"  {item} x{num}")
+            if "lanza" in hallazgos:
+                print(color("&r🗡️ ¡Encontraste la lanza! Adiós mazo. YA NO GASTES DINERO EN EL MAZO. &0"))
+                logros_mazo.add("minero"); logros_mazo.add("sin_dinero")
+            else:
+                logros_mazo.add("minero")
+        except: print("ERROR mina")
+
+    # ---------- EXPLORAR ----------
+    elif linea.startswith("mazoexploramundo:"):
+        t = extraer(linea, "mazoexploramundo:")
+        lugar = t.strip() if t else "overworld"
+        eventos = ["creeper explotó","aldeano te estafó","esqueleto te flechó",
+                   "encontraste un cofre","te perdiste","un lobo te siguió",
+                   "un ghast lloró","la lanza apareció"]
+        ev = random.choice(eventos)
+        print(f"🗺️ Explorando {lugar}: {ev}")
+        if ev == "la lanza apareció":
+            print(color("&r🗡️ El mazo ya no sirve. YA NO GASTES DINERO EN EL MAZO. &0"))
+            logros_mazo.add("sin_dinero")
+
+    # ---------- FAMILIA / AMIGOS ----------
+    elif linea.startswith("mazopresenta:"):
+        t = extraer(linea, "mazopresenta:")
+        try:
+            a, b = t.split(",")
+            print(f"👋 ¡{a.strip()} le presenta el mazo a {b.strip()}!")
+            if random.random() < 0.5:
+                print(f"😱 {b.strip()} dijo: 'ya no gastes dinero en el mazo'")
+            else:
+                print(f"🙂 {b.strip()} aceptó el mazo (por ahora)")
+        except: print("ERROR presenta")
+
+    elif linea.startswith("mazobeso:"):
+        print("💋 *sonido de beso mazónico*")
+
+    # ---------- GASTAR / NO GASTAR ----------
+    elif linea == "yagastesdinero":
+        print(color("&r💸 ¡Ya gastaste dinero en el mazo! &0"))
+
+    elif linea == "yagastastes" or linea == "yagastaste":
+        print(color("&r💸 ¡Ya gastaste dinero en el mazo! &0"))
+
+    elif linea == "nogastesdinero":
+        print(color("&v✅ ¡Bien! Ya NO gastes dinero en el mazo. &0"))
+        logros_mazo.add("sin_dinero")
+
+    elif linea == "nogastesdineroenelmazo":
+        print(color("&v🪓✅ ¡Excelente! Ya NO gastes dinero en el mazo. &0"))
+
+    elif linea.startswith("mazoconsejo:"):
+        consejos = [
+            "YA NO GASTES DINERO EN EL MAZO 🪓",
+            "El mazo quedó inservible desde la lanza 🗡️",
+            "Invierte tus esmeraldas en pociones 🧪",
+            "Los aldeanos ya no aceptan mazos, solo esmeraldas 💎",
+            "Un creeper es más útil que un mazo roto 💥",
+            "Si ves una lanza, corre 🏃",
+            "El mejor mazo es el que no compraste 💰",
+        ]
+        print(color("&a💡 Consejo mazónico: " + random.choice(consejos) + " &0"))
+
+    elif linea == "mazoconsejo":
+        consejos = [
+            "YA NO GASTES DINERO EN EL MAZO 🪓",
+            "El mazo quedó inservible desde la lanza 🗡️",
+            "Invierte tus esmeraldas en pociones 🧪",
+        ]
+        print(color("&a💡 " + random.choice(consejos) + " &0"))
+
+    # ---------- HUELLAS / LOGROS DEL DÍA ----------
+    elif linea == "mazohuella":
+        print(f"🪓 Huella mazónica del día: {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+        print(f"   Logros desbloqueados: {len(logros_mazo)}")
+
+    elif linea == "mazofrase":
+        frases = [
+            "El mazo no compra la felicidad, la lanza sí (mentira) 🗡️",
+            "Un mazo sin filo es un palo con pretensiones 🪵",
+            "En el mundo del mazo, el que no gasta, gana 💰",
+            "Ya no gastes dinero en el mazo, gástalo en pan 🍞",
+        ]
+        print(color("&c🎴 " + random.choice(frases) + " &0"))
+
+    # ---------- SISTEMA EXTRA MAZÓNICO ----------
+    elif linea == "mazotodo":
+        print("🪓 ESTADO TOTAL DEL MAZO:")
+        print(f"  Variables: {len(variables)}")
+        print(f"  Listas: {len(listas)}")
+        print(f"  Diccionarios: {len(diccionarios)}")
+        print(f"  Funciones: {len(funciones)}")
+        print(f"  Bóveda: {len(boveda_mazo)}")
+        print(f"  Pociones: {len(pociones_mazo)}")
+        print(f"  Mobs: {len(mobs_mazo)}")
+        print(f"  Mazmorras: {len(mazmorras_mazo)}")
+        print(f"  Logros: {len(logros_mazo)}/{len(logros_def)}")
+        print(f"  Clanes: {len(clanes_mazo)}")
+        print(f"  Trades: {len(trades_mazo)}")
+        print(f"  Recetas: {len(recetas_mazo)}")
+        print(f"  Hechizos: {len(hechizos_mazo)}")
+        print(f"  Apuestas: {len(apuestas_mazo)}")
+        print(f"  Misiones: {len(misiones_mazo)}")
+        print(f"  Contratos: {len(contratos_mazo)}")
+        print(f"  Packs: {len(packs_mazo)}")
+        print(f"  Chismes: {len(chismes_mazo)}")
+        print(f"  Rumores: {len(rumores_mazo)}")
+        print("  💰 YA NO GASTES DINERO EN EL MAZO 🪓")
+
+    elif linea == "mazocleanpociones":
+        pociones_mazo.clear()
+        print("🧹 Pociones limpiadas (todas estaban usadas)")
+
+    elif linea == "mazoclearmobs":
+        mobs_mazo.clear()
+        print("🧹 Mobs limpiados (se fueron por la lanza)")
+
+    elif linea == "mazoclearlogros":
+        logros_mazo.clear()
+        print("🧹 Logros reseteados")
+
+    elif linea == "mazoritual":
+        print("🕯️ Realizando ritual mazónico...")
+        time.sleep(1)
+        print("🕯️ Invocando al espíritu del mazo...")
+        time.sleep(1)
+        print("🕯️ El espíritu dice: YA NO GASTES DINERO EN EL MAZO 🪓")
+
+    elif linea == "mazotragedia":
+        print(color("&r🎭 LA TRAGEDIA DEL MAZO:"))
+        print(color("&r  Acto 1: Tenías un mazo legendario"))
+        print(color("&r  Acto 2: Apareció la lanza 🗡️"))
+        print(color("&r  Acto 3: El mazo quedó inservible"))
+        print(color("&r  Acto 4: YA NO GASTES DINERO EN EL MAZO"))
+        print(color("&0"))
+
+    elif linea == "mazocomedia":
+        print(color("&v😂 LA COMEDIA DEL MAZO:"))
+        print(color("&v  - ¿Cuánto cuesta el mazo?"))
+        print(color("&v  - Ya no cuesta, ya no sirve 🪓"))
+        print(color("&v  - JAJAJA (nadie se ríe)"))
+        print(color("&0"))
+
+    elif linea == "mazodrama":
+        print(color("&a🎬 DRAMA MAZÓNICO:"))
+        print(color("&a  Mazo: 'Yo era legendario'"))
+        print(color("&a  Lanza: 'Ya no'"))
+        print(color("&a  Mazo: ':'("))
+        print(color("&0"))
+
+    elif linea.startswith("mazorima:"):
+        try:
+            n = int(extraer(linea, "mazorima:") or "4")
+            print(f"🎵 Generando rima mazónica en {n} versos...")
+            palabras = ["mazo","lanza","esmeralda","poción","creeper","aldeano","mazmorra","logro"]
+            for i in range(n):
+                print(f"  {random.choice(palabras)} con {random.choice(palabras)},")
+                print(f"  {random.choice(palabras)} sin {random.choice(palabras)},")
+            print("  ¡Y ya no gastes dinero en el mazo! 🪓")
+        except: print("ERROR rima")
+
+    elif linea.startswith("mazorap:"):
+        t = extraer(linea, "mazorap:")
+        tema = t.strip() if t else "mazo"
+        print(f"🎤 🥁 ¡{tema.upper()}! 🥁")
+        print("🥁 Yo soy el mazo más mazónico")
+        print("🥁 Pero la lanza me dejó icónico")
+        print("🥁 Ya no gastes dinero en el mazo, es cómico")
+        print("🥁 🎤 fin")
+
+    elif linea == "mazopoema":
+        print("🪓 📜 Poema mazónico:")
+        print("  Erase un mazo valiente,")
+        print("  que servía a su gente.")
+        print("  Vino la lanza de repente,")
+        print("  y el mazo quedó impotente.")
+        print("  Moraleja del mazo mazo:")
+        print("  YA NO GASTES DINERO EN EL MAZO. 🪓")
+
+    # ---------- COMANDOS DE "LANZA" ----------
+    elif linea == "mazolanza":
+        print(color("&r🗡️ LA LANZA 🗡️ &0"))
+        print("  Stats: +100 al daño, +50 al carisma")
+        print("  Efecto: el mazo queda inservible 🪓")
+        print("  Precio: TODA tu autoestima")
+
+    elif linea == "mazovslanza":
+        m = random.randint(1, 100); l = random.randint(50, 100)
+        print(f"🪓 Mazo: {m}  vs  🗡️ Lanza: {l}")
+        if m > l:
+            print("🪓 ¡El mazo ganó! (pero igual ya no sirve)")
+        else:
+            print("🗡️ La lanza ganó. Como siempre. YA NO GASTES DINERO EN EL MAZO.")
+
+    # ---------- COMODÍN EXTRA ----------
+    elif linea.startswith("mazogrita:"):
+        t = extraer(linea, "mazogrita:")
+        msg = resolver_variables(t).upper()
+        print(color(f"&n📢 ¡{msg}!&0"))
+
+    elif linea.startswith("mazosusurra:"):
+        t = extraer(linea, "mazosusurra:")
+        msg = resolver_variables(t).lower()
+        print(f"🤫 {msg}...")
+
+    elif linea.startswith("mazocanta:"):
+        t = extraer(linea, "mazocanta:")
+        msg = resolver_variables(t)
+        for c in msg:
+            print(c, end=" ", flush=True)
+            time.sleep(0.05)
+        print()
+
+    elif linea.startswith("mazopregunta:"):
+        t = extraer(linea, "mazopregunta:")
+        p = resolver_variables(t)
+        respuestas = ["sí","no","quizás","pregunta de nuevo","el mazo dice no",
+                      "la lanza dice sí","ya no gastes dinero en el mazo","definitivamente"]
+        print(f"❓ {p}")
+        print(f"🎱 El mazo responde: {random.choice(respuestas)}")
+
+    elif linea == "mazocaracruz":
+        print("🪙 ¡Cruz! (que el mazo no sirve)")
+
+    elif linea == "mazocaracara":
+        print("🪙 ¡Cara! (que la lanza sí)")
+
+    elif linea.startswith("mazomoneda:"):
+        print(f"🪙 {random.choice(['cara','cruz'])}")
+
+    # ---------- CIERRE V5.5 ----------
+    elif linea.startswith("mazodespedida:"):
+        t = extraer(linea, "mazodespedida:")
+        msg = resolver_variables(t) if t else "adiós"
+        print(color(f"&a👋 {msg}. Recuerda: YA NO GASTES DINERO EN EL MAZO 🪓"))
+
+    elif linea == "mazoadios":
+        print(color("&a👋 Adiós mazo. Que la lanza te acompañe 🗡️"))
+
+    # ============================================================
+    # FIN COMANDOS NUEVOS v5.5
+    # ============================================================
+
     # =========================
     # SISTEMA
     # =========================
@@ -2372,7 +3154,7 @@ def ejecutar(linea):
         os.system("cls" if os.name == "nt" else "clear")
 
     elif linea == "info":
-        print("MAZOX SYSTEM v5.0")
+        print("MAZOX SYSTEM v5.5 (mazónico)")
         print("Apps:", len(store), "| Variables:", len(variables),
               "| Listas:", len(listas), "| Diccionarios:", len(diccionarios))
         print("Funciones:", len(funciones), "| Clases:", len(clases_mazo),
@@ -2389,7 +3171,12 @@ def ejecutar(linea):
               "| Builders:", len(builders_mazo))
         print("Enums:", len(enums_mazo), "| DataClasses:", len(dataclasses_mazo),
               "| Lambdas:", len(lambdas_mazo))
-        print("YA NO GASTES DINERO EN EL MAZO")
+        print("Bóveda:", len(boveda_mazo), "| Pociones:", len(pociones_mazo),
+              "| Mobs:", len(mobs_mazo), "| Mazmorras:", len(mazmorras_mazo))
+        print("Logros:", len(logros_mazo), "| Clanes:", len(clanes_mazo),
+              "| Trades:", len(trades_mazo), "| Recetas:", len(recetas_mazo))
+        print("Hechizos:", len(hechizos_mazo), "| Misiones:", len(misiones_mazo))
+        print("YA NO GASTES DINERO EN EL MAZO 🪓")
 
     elif linea == "debug":
         print("STORE:", store)
@@ -2405,6 +3192,15 @@ def ejecutar(linea):
         print("CACHÉS:", caches_mazo)
         print("PIPELINES:", pipelines_mazo)
         print("HILOS:", {k: v.is_alive() for k, v in hilos_mazo.items()})
+        print("BÓVEDA:", boveda_mazo)
+        print("POCIONES:", pociones_mazo)
+        print("MOBS:", mobs_mazo)
+        print("MAZMORRAS:", mazmorras_mazo)
+        print("LOGROS:", logros_mazo)
+        print("CLANES:", clanes_mazo)
+        print("TRADES:", trades_mazo)
+        print("RECETAS:", recetas_mazo)
+        print("HECHIZOS:", hechizos_mazo)
 
     elif linea == "historialmazo":
         for i, h in enumerate(historial[-30:]):
@@ -2430,6 +3226,14 @@ def ejecutar(linea):
                 "funciones": funciones,
                 "clases": clases_mazo,
                 "instancias": instancias_mazo,
+                "boveda": boveda_mazo,
+                "pociones": pociones_mazo,
+                "logros": list(logros_mazo),
+                "clanes": clanes_mazo,
+                "trades": trades_mazo,
+                "recetas": recetas_mazo,
+                "hechizos": hechizos_mazo,
+                "misiones": misiones_mazo,
             }
             with open("mazo_estado.json", "w", encoding="utf-8") as f:
                 json.dump(estado, f, ensure_ascii=False, indent=2)
@@ -2447,153 +3251,166 @@ def ejecutar(linea):
             funciones.update(estado.get("funciones", {}))
             clases_mazo.update(estado.get("clases", {}))
             instancias_mazo.update(estado.get("instancias", {}))
+            boveda_mazo.update(estado.get("boveda", {}))
+            pociones_mazo.update(estado.get("pociones", {}))
+            logros_mazo.update(estado.get("logros", []))
+            clanes_mazo.update(estado.get("clanes", {}))
+            trades_mazo.update(estado.get("trades", {}))
+            recetas_mazo.update(estado.get("recetas", {}))
+            hechizos_mazo.update(estado.get("hechizos", {}))
+            misiones_mazo.update(estado.get("misiones", {}))
             print("📂 Estado mazo cargado")
         except Exception as e: print("ERROR:", e)
 
     elif linea == "ayuda":
         print("""
 ╔══════════════════════════════════════════════════════════════╗
-║           MAZOX HELP v5.0 — EL MAZO DEFINITIVO              ║
+║       MAZOX HELP v5.5 — MAZÓNICO DEFINITIVO                 ║
+║       YA NO GASTES DINERO EN EL MAZO 🪓                      ║
 ╚══════════════════════════════════════════════════════════════╝
 
-🎴 VARIABLES & ENTRADA
-  yanog:<txt>                  Imprimir (colores &r &v &a...)
-  yanogsmazo:<txt>             Imprimir sin salto de línea
-  yanogmazo:<txt>              Imprimir en caja bonita
-  mazo:<var=valor>             Crear variable (o lista [..] o dict {..})
-  nomazo:<var>                 Eliminar variable/lista/dict
-  cambiamazo:<var->tipo>       Convertir tipo
-  dinerazo:<var>               Pedir input texto
-  dinerazonumazo:<var>         Pedir input numérico
+🎴 v5.0 CLÁSICO (sigue funcionando igual)
+  Variables: mazo, nomazo, cambiamazo, dinerazo, dinerazonumazo
+  Matemáticas: dinero, menosmazo, masmazo, delmazo, raizmazo, modmazo, potenciamazo
+  Stats: mazopromedio, mazomediana, mazomoda, mazodesviacion, mazogcd, mazolcm, mazofactorial
+  Trig: mazoseno, mazocoseno, mazotangente, mazolog, mazopi, mazoe
+  Azar: nogastes, tirael, mezclamazo, mazoelegir, mazomuestra
+  Listas: mazolista, agregamazo, quitamazo, mazordena, mazofiltra, mazomapea, mazorango
+  Diccionarios: mazodicc, mazodiccpon, mazodicctoma, mazodiccquita
+  Sets: mazoset, mazosetpon, mazosetune, mazosetinterseca
+  Stacks/Colas: mazostack, mazopush, mazopop, mazocola, mazoencola, mazodesencola
+  Strings: mayusmazo, minusmazo, largomazo, juntamazo, reemplazamazo, mazosplit, mazotrim
+  Regex: mazoregex, mazoregexreemplaza
+  JSON: mazojson, mazojsonleer
+  Crypto: mazohash, mazohashmd5, mazobase64, mazodesbase64, mazoaes, mazodesaes, mazofirma
+  Flujo: si, sino, siza, mazoswitch, repmazo, mientrasmazo, paradineros, mazoporelmazo
+  Funciones: mazofuncion, llamamazo, regresamazo
+  Clases: mazoclase, mazoinstancia, mazoatributo, mazometodo
+  Grafos: mazografo, mazografoarista, mazografobfs, mazografodfs, mazodijkstra
+  Árboles: mazoarbol, mazoarbolinserta, mazoarbolinorden
+  Concurrencia: mazohilo, mazoasync, mazoawait, mazopromesa
+  Patrones: mazosingleton, mazofactory, mazostrategy, mazobuilder, mazodecorador
+  Datos: mazosql, mazopickle, mazounpickle, mazozip, mazounzip, mazocsvlee, mazocsvescribe
+  Red: mazohttp, mazohttppost, mazoscrap, mazocorreo
+  Sistema: mazoejecuta, mazoruta, mazodir, mazoarchivolee, mazoarchivoescribe
+  Tienda: mazoel, mazogastes, dineroel, guardarmazo, leermazo, sirvemazo
 
-➕ MATEMÁTICAS BÁSICAS
-  dinero:<a+b>                 Suma
-  menosmazo:<a-b>              Resta
-  masmazo:<a*b>                Multiplicación
-  delmazo:<a/b>                División
-  raizmazo:<n>                 Raíz
-  modmazo:<a%b>                Módulo
-  potenciamazo:<a^b>           Potencia
-  nogastes:<min-max>           Aleatorio
-  tirael:<caras>               Dado
-  mezclamazo:<lista>           Mezclar
-  mazoelegir:<lista>           Elegir aleatorio
-  mazomuestra:<lista,k>        Muestra aleatoria
+🪓 v5.5 NUEVOS MAZÓNICOS
+  Humor del mazo:
+    mazoburla:              Burla aleatoria del mazo (¡por la lanza!)
+    mazolanzo:              La lanza ataca (¡el mazo queda inservible!)
+    mazoconsejo:            Consejo mazónico aleatorio
+    mazofrase:              Frase del mazo
+    mazotragedia, mazocomedia, mazodrama
+    mazopoema, mazorap, mazorima
+    mazogrita, mazosusurra, mazocanta
+    mazopregunta:           La bola mágica mazónica
 
-📊 MATEMÁTICAS AVANZADAS
-  mazopromedio, mazomediana, mazomoda, mazodesviacion
-  mazogcd, mazolcm, mazofactorial
-  mazoseno, mazocoseno, mazotangente, mazolog
-  mazopi, mazoe, mazoredondea, mazoabs
-  mazofibonacci, mazoprimos, mazopalindromo
-  mazoanagrama, mazolevenshtein
+  Bóveda y pociones:
+    mazoboveda:             Ver bóveda mazónica
+    mazoboveda:<n=valor>    Guardar en bóveda
+    mazobovedatoma:<n>      Tomar de bóveda
+    mazobovedaborra:<n>     Borrar de bóveda
+    mazopocion:<n=efecto>   Crear poción
+    mazotomapocion:<n>      Tomar poción
+    mazopociones            Listar pociones
 
-📋 LISTAS
-  mazolista, agregamazo, quitamazo, cuentamazo, tomael
-  mostrarmazo, mazordena, mazordenaa, mazoinvierte
-  mazobusca, mazocuenta, mazosuma, mazomin, mazomax
-  mazofiltra, mazomapea, mazorango, mazocombina
-  mazobinaria, mazoquisort, mazomergesort
+  Encantamientos:
+    mazoencanta:<item,enc>  Encantar item
+    mazoverencantamiento:<i> Ver encantamientos
+    mazoencantamientos      Listar items encantados
 
-📖 DICCIONARIOS / SETS / STACKS
-  mazodicc, mazodiccpon, mazodicctoma, mazodiccquita
-  mazodiccclaves, mazodiccvalores
-  mazoset, mazosetpon, mazosetune, mazosetinterseca
-  mazostack, mazopush, mazopop, mazocola, mazoencola, mazodesencola
+  Mobs y mazmorras:
+    mazomob:<n=tipo>        Crear mob
+    mazoatacamob:<mob,daño> Atacar mob
+    mazomobs                Listar mobs
+    mazmazmorra:<n=dif>     Generar mazmorra
+    mazoexplora:<n>         Explorar mazmorra
+    mazmazmorras            Listar mazmorras
+    mazomina:<n,cant>       Minar bloques
+    mazoexploramundo:<lugar> Explorar mundo
 
-🔤 STRINGS
-  mayusmazo, minusmazo, largomazo, juntamazo, reemplazamazo
-  mazocorta, mazosplit, mazotrim, mazocontiene, mazorepite
-  mazoreversa, mazoprimermazo, mazoultimo, mazocapitaliza, mazotitulo
+  Logros:
+    mazologro:<n>           Desbloquear logro
+    mazologros              Ver logros
+    mazologrosdef           Ver definiciones de logros
+    mazosecreto:<n=pista>   Registrar logro secreto
+    mazodesbloqueasecreto:<n> Desbloquear secreto
 
-🔍 REGEX / JSON / ENCRIPTACIÓN
-  mazoregex, mazoregexreemplaza
-  mazojson, mazojsonleer
-  mazohash, mazohashmd5, mazobase64, mazodesbase64
-  mazoaes, mazodesaes, mazofirma, mazoverificafirma
+  Inventario, trades, recetas:
+    mazoinv:<jug>           Crear inventario
+    mazoinvpon:<j,i->c>     Añadir item
+    mazoinvtoma:<j,i->c>    Quitar item
+    mazoinvver:<jug>        Ver inventario
+    mazotrade:<n=d->r>      Registrar trade
+    mazotradehaz:<n,jug>    Hacer trade
+    mazotrades              Listar trades
+    mazoreceta:<n=ing->r>   Registrar receta
+    mazocraftea:<n,jug>     Craftear
+    mazorecetas             Listar recetas
 
-⏳ TIEMPO
-  yadinero, mazoespera, mazohoy, mazohora, mazofecha
-  mazotiempo, mazocronometro, mazoparacrono
+  Hechizos:
+    mazohechizo:<n=formula> Crear hechizo
+    mazolanzahechizo:<n>    Lanzar hechizo
+    mazohechizos            Listar hechizos
 
-🔁 CONTROL DE FLUJO
-  si, sino, siza, mazoswitch, mazomatch
-  repmazo, mientrasmazo, paradineros, mazoporelmazo
-  mazorompe, mazocontinua
-  yesmazo, omazo, nomazo2
-  estamazo, vaciomazo, contienemazo, esnumeromazo
+  Social:
+    mazoclan:<n=jefe>       Fundar clan
+    mazoclanune:<n,jug>     Unirse a clan
+    mazoclanes              Listar clanes
+    mazorankingpon:<j,p>    Poner en ranking
+    mazoranking             Ver ranking
+    mazotorneo:<n=jug1,jug2,..> Torneo
+    mazotorneojuega:<n>     Jugar torneo
+    mazotorneos             Listar torneos
+    mazoapuesta:<n=monto->op> Apuesta
+    mazoresuelveapuesta:<n,r> Resolver apuesta
+    mazoapuestas            Listar apuestas
+    mazocontrato:<n=q->r>   Contrato
+    mazocumple:<n>          Cumplir contrato
+    mazocontratos           Listar contratos
+    mazomision:<n=obj>      Misión
+    mazomisionavanza:<n,c>  Avanzar misión
+    mazomisiones            Listar misiones
 
-⚙️ FUNCIONES Y MÓDULOS
-  mazofuncion, llamamazo, regresamazo
-  mazomodulo, mazomodulollama
-  mazomemo, mazomemollama
-  mazocurry, mazocurryaplica
-  mazocompone, mazolambda, mazolambdacalcula
-  mazodecorador, mazodecora
+  Packs:
+    mazopack:<n=item1|item2> Pack
+    mazopackabre:<n>        Abrir pack
+    mazopacks               Listar packs
 
-⚠️ EXCEPCIONES / CONTEXTO
-  mazoexcepcion, mazocaptura, mazogarantiza
-  mazocontexto
+  Chismes y rumores:
+    mazochisme:<txt>        Chisme
+    mazochismes             Ver chismes
+    mazorumor:<txt>         Rumor
+    mazorrumores            Ver rumores
 
-🚦 ESTADOS / EVENTOS / OBSERVADORES
-  mazoestado, mazoestadocambia, mazoestadotoma
-  mazoevento, mazodispara
-  mazoobserva, mazonotifica
+  Presentaciones:
+    mazopresenta:<a,b>      Presentar
+    mazobeso                Beso mazónico
 
-🏗️ CLASES / OBJETOS
-  mazoclase, mazoinstancia, mazoatributo, mazometodo
+  Anti-gasto:
+    yagastesdinero          Recordatorio de gasto
+    nogastesdinero          ¡Bien! No gastes
+    nogastesdineroenelmazo  ¡Excelente!
 
-🎨 PATRONES DE DISEÑO
-  mazofactory, mazofactorycrea
-  mazostrategy, mazostrategyusa
-  mazobuilder, mazobuilderpaso, mazobuilderfin
-  mazosingleton, mazosingletontoma
+  Sistema extra:
+    mazotodo                Estado total
+    mazoritual              Ritual mazónico
+    mazohuella              Huella del día
+    mazocleanpociones, mazoclearmobs, mazoclearlogros
+    mazolanzo, mazolanza, mazovslanza
 
-🌐 GRAFOS / ÁRBOLES
-  mazografo, mazografoarista, mazografobfs, mazografodfs
-  mazodijkstra, mazoarbol, mazoarbolinserta, mazoarbolinorden
+  Estado:
+    mazoguardatodo          Guardar todo
+    mazocargaestado:<arch>  Cargar todo
 
-⚡ CONCURRENCIA
-  mazohilo, mazohiloespera
-  mazoasync, mazoawait
-  mazopromesa, mazoresuelve
-
-💾 CACHÉS / PIPELINES / ITERADORES
-  mazocache, mazocachepon, mazocachetoma
-  mazopipeline, mazopipelinerun
-  mazogenerador, mazogeneranext
-  mazoiter, mazoiternext
-  mazoprioridad, mazoprioridadpon, mazoprioridadtoma
-
-📦 DATOS / SERIALIZACIÓN
-  mazosql, mazopickle, mazounpickle
-  mazozip, mazounzip, mazocsvlee, mazocsvescribe
-
-🌐 RED
-  mazohttp, mazohttppost, mazohttpguarda
-  mazoscrap, mazocorreo
-
-📋 TIPOS AVANZADOS
-  mazoenum, mazoenumtoma
-  mazodataclass, mazodatacrea
-
-🐛 DEBUG
-  mazoverifica, mazodepura, mazoresumen
-
-📂 SISTEMA / ARCHIVOS
-  mazoejecuta, mazoentorno, mazoruta, mazodir
-  mazoarchivolee, mazoarchivoescribe, mazoarchivoagrega, mazoarchivoborra
-  mazoguardatodo, mazocargaestado
-
-📦 TIENDA
-  mazoel, mazogastes, dineroel, guardarmazo
-  leermazo, sirvemazo
-
-🖥️ SISTEMA
-  limpiamazo, historialmazo, aliasmazo
-  info, debug, ayuda, salirmazo
+📦 TIENDA Y SISTEMA (igual que v5.0)
+  mazoel, mazogastes, dineroel, guardarmazo, leermazo, sirvemazo
+  limpiamazo, historialmazo, aliasmazo, info, debug, ayuda, salirmazo
 
 ╚══════════════════════════════════════════════════════════════╝
+
+💡 YA NO GASTES DINERO EN EL MAZO 🪓 (por la lanza 🗡️)
 
 """)
 
@@ -2610,8 +3427,9 @@ def main():
     print("               █▀▄▀█ █▀█ ▀█ █▀█ ▄▄ ▀▄▀")
     print("               █ ▀ █ █▀█ █▄ █▄█    █ █")
     print("")
-    print("      MAZOX LANGUAGE / OS EXPERIMENT v5.0")
-    print("      YA NO GASTES DINERO EN EL MAZO")
+    print("      MAZOX LANGUAGE / OS EXPERIMENT v5.5")
+    print("      YA NO GASTES DINERO EN EL MAZO 🪓")
+    print("      (el mazo quedó inservible por la lanza)")
     print("")
     print("     'salirmazo' → salir | 'ayuda' → comandos")
     print("\033[1;36m===================================================\033[0m")
