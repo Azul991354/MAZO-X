@@ -1,4 +1,4 @@
-# 🚀 MAZOX 5.0
+# 🚀 MAZOX 6.1
 
 > **"YA NO GASTES DINERO EN EL MAZO"**
 
