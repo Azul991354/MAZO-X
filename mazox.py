@@ -1,11 +1,12 @@
 # ======================= #
-# MAZOX SYSTEM 6.0        #
+# MAZOX SYSTEM 6.1        #
 # ––––––––––––––––––––––– #
 #  v6.0 YA esta HECHO!!!  #
 #  + 150 COMANDOS NUEVOS  #
 #  NO SE QUE MAS DECIR    #
 #  YA NO GASTES DINERO    #
 #  EN EL MAZO!!!          #
+# arregle algo en 6.1     #
 # ======================= #
 
 import sys
@@ -2835,6 +2836,7 @@ def ejecutar(linea):
             logros_secretos[n.strip()] = pista.strip()
             print(f"🤫 Logro secreto '{n.strip()}' registrado (pista: {pista.strip()})")
         except: print("ERROR secreto")
+            # pq lees hasta aca, bueno, ya no gastes dinero en el mazo
 
     elif linea.startswith("mazodesbloqueasecreto:"):
         t = extraer(linea, "mazodesbloqueasecreto:")
@@ -3265,8 +3267,8 @@ def ejecutar(linea):
     elif linea == "ayuda":
         print("""
 ╔══════════════════════════════════════════════════════════════╗
-║       MAZOX HELP v5.5 — MAZÓNICO DEFINITIVO                 ║
-║       YA NO GASTES DINERO EN EL MAZO 🪓                      ║
+║       MAZOX HELP v6.1                                                   ║
+║       YA NO GASTES DINERO EN EL MAZO 🪓                                 ║
 ╚══════════════════════════════════════════════════════════════╝
 
 🎴 v5.0 CLÁSICO (sigue funcionando igual)
@@ -3427,9 +3429,8 @@ def main():
     print("               █▀▄▀█ █▀█ ▀█ █▀█ ▄▄ ▀▄▀")
     print("               █ ▀ █ █▀█ █▄ █▄█    █ █")
     print("")
-    print("      MAZOX LANGUAGE / OS EXPERIMENT v5.5")
-    print("      YA NO GASTES DINERO EN EL MAZO 🪓")
-    print("      (el mazo quedó inservible por la lanza)")
+    print("      MAZOX LANGUAGE / OS EXPERIMENT v6.1")
+    print("         YA NO GASTES DINERO EN EL MAZO!")
     print("")
     print("     'salirmazo' → salir | 'ayuda' → comandos")
     print("\033[1;36m===================================================\033[0m")
