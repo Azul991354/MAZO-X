@@ -1,12 +1,14 @@
 # ======================= #
-# MAZOX SYSTEM 6.1        #
+# MAZOX SYSTEM 6.2        #
 # ––––––––––––––––––––––– #
-#  v6.0 YA esta HECHO!!!  #
-#  + 150 COMANDOS NUEVOS  #
-#  NO SE QUE MAS DECIR    #
-#  YA NO GASTES DINERO    #
-#  EN EL MAZO!!!          #
-# arregle algo en 6.1     #
+#  Agregé soporte más     #
+#  bueno para mazoxpkg,   #
+#  el compilador de       #
+#  mazoxpkg esta en el    #
+#  repo junto a este      #
+#  script.                #
+# ya no gastes dinero en  #
+# en mazo!                #
 # ======================= #
 
 import sys
@@ -63,6 +65,128 @@ from functools import lru_cache, reduce
 from itertools import combinations, permutations, product, chain, groupby
 
 # =========================
+# LECTOR DE PAQUETES .mazoxpkg
+# =========================
+class MazoxPkg:
+    """Lector del formato MAZOXPKG (propio, no es ZIP)."""
+
+    MAGIC = b"MAZOXPKG"
+
+    def __init__(self):
+        self.files = {}
+        self.paths = []
+        self.marker_style = None
+
+    @classmethod
+    def parse(cls, data):
+        if isinstance(data, str):
+            data = data.encode("utf-8", errors="surrogateescape")
+
+        pkg = cls()
+
+        if not data.startswith(cls.MAGIC):
+            raise ValueError("El archivo no empieza con 'MAZOXPKG'")
+
+        pos = len(cls.MAGIC)
+        pos = cls._skip_ws(data, pos)
+
+        if not data.startswith(b"filesPaths=", pos):
+            raise ValueError("Falta la seccion 'filesPaths='")
+        pos += len(b"filesPaths=")
+
+        end_paths = data.find(b";", pos)
+        if end_paths == -1:
+            raise ValueError("'filesPaths' sin terminador ';'")
+
+        paths_raw = data[pos:end_paths]
+        pos = cls._skip_ws(data, end_paths + 1)
+
+        try:
+            paths_str = paths_raw.decode("utf-8")
+        except UnicodeDecodeError:
+            paths_str = paths_raw.decode("latin-1")
+
+        pkg.paths = [p.strip() for p in paths_str.split(",") if p.strip()]
+        if not pkg.paths:
+            raise ValueError("'filesPaths' no declara ningun archivo")
+
+        if not data.startswith(b"files=", pos):
+            raise ValueError("Falta la seccion 'files='")
+        pos += len(b"files=")
+
+        for i, path in enumerate(pkg.paths):
+            next_path = pkg.paths[i + 1] if i + 1 < len(pkg.paths) else None
+            pos = cls._skip_ws(data, pos)
+
+            path_bytes = path.encode("utf-8") + b"-Bin"
+            if not data.startswith(path_bytes, pos):
+                raise ValueError(f"Se esperaba la ruta '{path}' en offset {pos}")
+            pos += len(path_bytes)
+
+            if pos >= len(data) or data[pos:pos + 1] not in (b"0", b"1"):
+                raise ValueError(f"Se esperaba Bin0/Bin1 para '{path}'")
+            binary = data[pos:pos + 1] == b"1"
+            pos += 1
+
+            if not data.startswith(b"Contains=", pos):
+                raise ValueError(f"Falta 'Contains=' para '{path}'")
+            pos += len(b"Contains=")
+
+            if next_path is None:
+                content_end, pos_after, style = cls._find_end_of_package(data, pos)
+            else:
+                content_end, pos_after, style = cls._find_intermediate_end(data, pos, next_path)
+
+            if style is not None:
+                pkg.marker_style = style
+
+            pkg.files[path] = {
+                "binary": binary,
+                "content": data[pos:content_end],
+            }
+            pos = pos_after
+
+        return pkg
+
+    @staticmethod
+    def _skip_ws(data, pos):
+        while pos < len(data) and data[pos:pos + 1] in (b" ", b"\t", b"\r", b"\n"):
+            pos += 1
+        return pos
+
+    @staticmethod
+    def _find_end_of_package(data, start):
+        for marker in (b"\x0bEndFile", b"EndFile"):
+            idx = data.rfind(marker, start)
+            while idx != -1:
+                tail = data[idx + len(marker):]
+                if tail.strip() == b"":
+                    return idx, idx + len(marker), marker
+                idx = data.rfind(marker, start, idx)
+        return len(data), len(data), None
+
+    @staticmethod
+    def _find_intermediate_end(data, start, next_path):
+        check = next_path.encode("utf-8") + b"-Bin"
+        for marker in (b"\x0bEndFile", b"EndFile"):
+            idx = data.find(marker, start)
+            while idx != -1:
+                p = idx + len(marker)
+                while p < len(data) and data[p:p + 1] in (b" ", b"\t", b"\r", b"\n"):
+                    p += 1
+                if data.startswith(check, p):
+                    return idx, p, marker
+                idx = data.find(marker, idx + 1)
+        for marker in (b"\x0bEndFile\n", b"\x0bEndFile", b"EndFile\n", b"EndFile"):
+            idx = data.find(marker, start)
+            if idx != -1:
+                return idx, idx + len(marker), marker
+        raise ValueError(f"No se encontro fin para el archivo antes de '{next_path}'")
+
+
+paquete_actual = None
+
+# =========================
 # ESTADO GLOBAL
 # =========================
 variables = {}
@@ -108,15 +232,15 @@ enums_mazo = {}
 dataclasses_mazo = {}
 
 # v5.5 — ESTADO NUEVO
-boveda_mazo = {}          # bóveda secreta mazónica
-pociones_mazo = {}        # pociones con efectos
-encantamientos_mazo = {}  # encantamientos para funciones
-mobs_mazo = {}            # mobs del mazo
-mazmorras_mazo = {}       # mazmorras
-logros_mazo = set()       # logros desbloqueados
-inventario_mazo = {}      # inventario por jugador
-trades_mazo = {}          # trades con aldeanos
-recetas_mazo = {}         # recetas de crafteo
+boveda_mazo = {}
+pociones_mazo = {}
+encantamientos_mazo = {}
+mobs_mazo = {}
+mazmorras_mazo = {}
+logros_mazo = set()
+inventario_mazo = {}
+trades_mazo = {}
+recetas_mazo = {}
 encantamientos_items = {}
 hechizos_mazo = {}
 clanes_mazo = {}
@@ -261,6 +385,157 @@ def cond(c):
         return False
 
 # =========================
+# EJECUTORES DE ARCHIVO / PAQUETE
+# =========================
+def ejecutar_archivo_mazox(ruta):
+    """Ejecuta un .mazox (texto plano, tipo bash de MAZO-X)."""
+    try:
+        with open(ruta, "r", encoding="utf-8", errors="surrogateescape") as f:
+            for linea in f:
+                ejecutar(linea)
+    except FileNotFoundError:
+        print(f"\033[31mArchivo no encontrado: {ruta}\033[0m")
+    except Exception as e:
+        print(f"\033[31mError al ejecutar '{ruta}': {e}\033[0m")
+
+
+def ejecutar_paquete_mazoxpkg(ruta_paquete):
+    """Parsea un .mazoxpkg y ejecuta su '/main.mazox'."""
+    global paquete_actual
+    try:
+        with open(ruta_paquete, "rb") as f:
+            data = f.read()
+    except FileNotFoundError:
+        print(f"\033[31mArchivo no encontrado: {ruta_paquete}\033[0m")
+        return
+    except Exception as e:
+        print(f"\033[31mError al leer '{ruta_paquete}': {e}\033[0m")
+        return
+
+    try:
+        pkg = MazoxPkg.parse(data)
+    except ValueError as e:
+        print(f"\033[31mError al parsear '{ruta_paquete}': {e}\033[0m")
+        return
+    except Exception as e:
+        print(f"\033[31mError inesperado al parsear: {e}\033[0m")
+        return
+
+    paquete_actual = pkg
+
+    main_path = "/main.mazox"
+    if main_path not in pkg.files:
+        print(f"\033[31mEl paquete no contiene '{main_path}'\033[0m")
+        return
+
+    info = pkg.files[main_path]
+    if info["binary"]:
+        print(f"\033[33m'{main_path}' esta marcado como Bin1; no se puede ejecutar\033[0m")
+        return
+
+    try:
+        codigo = info["content"].decode("utf-8")
+    except UnicodeDecodeError:
+        try:
+            codigo = info["content"].decode("latin-1")
+        except Exception:
+            print(f"\033[31mNo se pudo decodificar '{main_path}'\033[0m")
+            return
+
+    estilo = (pkg.marker_style or b"").decode("latin-1", errors="ignore")
+    print(f"\033[1;36mPaquete abierto: {ruta_paquete} "
+          f"({len(pkg.paths)} archivos, marcador: {estilo!r})\033[0m")
+
+    for linea in codigo.splitlines():
+        ejecutar(linea)
+
+
+def _manejar_comandos_pkg(linea):
+    """Comandos extra de .mazoxpkg. Devuelve True si los manejo."""
+    global paquete_actual
+
+    if linea.startswith("abremazo:"):
+        t = extraer(linea, "abremazo:")
+        if t:
+            ejecutar_paquete_mazoxpkg(t.strip())
+        return True
+
+    if linea == "mazopkglista" or linea == "mazopkginfo":
+        if paquete_actual is None:
+            print("No hay paquete abierto")
+            return True
+        print(f"Paquete con {len(paquete_actual.paths)} archivos "
+              f"(marcador: {paquete_actual.marker_style!r})")
+        for p in paquete_actual.paths:
+            info = paquete_actual.files.get(p, {})
+            tipo = "BIN" if info.get("binary") else "TXT"
+            size = len(info.get("content", b""))
+            print(f"  [{tipo}] {p} ({size} bytes)")
+        return True
+
+    if linea.startswith("mazopkgleer:"):
+        t = extraer(linea, "mazopkgleer:")
+        if paquete_actual is None:
+            print("No hay paquete abierto")
+        elif t and t.strip() in paquete_actual.files:
+            info = paquete_actual.files[t.strip()]
+            if info["binary"]:
+                print(f"'{t.strip()}' es binario; usa 'mazopkgbinario:'")
+            else:
+                try:
+                    print(info["content"].decode("utf-8"))
+                except UnicodeDecodeError:
+                    print(info["content"].decode("latin-1"))
+        else:
+            print(f"Archivo '{t}' no existe en el paquete")
+        return True
+
+    if linea.startswith("mazopkgbinario:"):
+        t = extraer(linea, "mazopkgbinario:")
+        if paquete_actual is None:
+            print("No hay paquete abierto")
+        elif t:
+            try:
+                interno, destino = t.split(",", 1)
+                interno, destino = interno.strip(), destino.strip()
+                if interno in paquete_actual.files:
+                    info = paquete_actual.files[interno]
+                    with open(destino, "wb") as f:
+                        f.write(info["content"])
+                    print(f"Extraido '{interno}' -> '{destino}' ({len(info['content'])} bytes)")
+                else:
+                    print(f"Archivo '{interno}' no existe")
+            except ValueError:
+                print("Uso: mazopkgbinario:</ruta/interna,archivo_destino>")
+        return True
+
+    if linea.startswith("mazopkgejecuta:"):
+        t = extraer(linea, "mazopkgejecuta:")
+        if paquete_actual is None:
+            print("No hay paquete abierto")
+        elif t and t.strip() in paquete_actual.files:
+            info = paquete_actual.files[t.strip()]
+            if info["binary"]:
+                print(f"'{t.strip()}' es binario; no se puede ejecutar")
+            else:
+                try:
+                    codigo = info["content"].decode("utf-8")
+                except UnicodeDecodeError:
+                    codigo = info["content"].decode("latin-1")
+                for l in codigo.splitlines():
+                    ejecutar(l)
+        else:
+            print(f"Archivo '{t}' no existe en el paquete")
+        return True
+
+    if linea == "mazopkgcerrar":
+        paquete_actual = None
+        print("Paquete cerrado")
+        return True
+
+    return False
+
+# =========================
 # EJECUTAR
 # =========================
 def ejecutar(linea):
@@ -268,6 +543,11 @@ def ejecutar(linea):
     if not linea or linea.startswith("#") or linea.startswith("//"):
         return
     historial.append(linea)
+
+    # --- NUEVO: comandos de paquete .mazoxpkg ---
+    if _manejar_comandos_pkg(linea):
+        return
+    # --------------------------------------------
 
     # =========================
     # IMPRIMIR
@@ -2332,11 +2612,7 @@ def ejecutar(linea):
         except: print("ERROR datacrea")
 
     # ============================================================
-    # ============================================================
     #       v5.5 — COMANDOS NUEVOS MAZÓNICOS 🪓
-    #       YA NO GASTES DINERO EN EL MAZO
-    #       (el mazo quedó inservible por la lanza)
-    # ============================================================
     # ============================================================
 
     # ---------- BURLA DEL MAZO ----------
@@ -2350,7 +2626,6 @@ def ejecutar(linea):
         print(color("&a🪓 " + random.choice(burlas_mazo) + " &0"))
 
     elif linea.startswith("mazolanzo:"):
-        # La lanza que arruinó el mazo
         t = extraer(linea, "mazolanzo:")
         objetivo = resolver_variables(t).strip() if t else "el mazo"
         daño = random.randint(50, 100)
@@ -2396,9 +2671,7 @@ def ejecutar(linea):
         except: print("ERROR pocion")
 
     elif linea.startswith("mazotomapocion:"):
-        t = extraer(linea, "mazotoma pocion:".replace(" ", ""))
-        if t is None:
-            t = extraer(linea, "mazotomapocion:")
+        t = extraer(linea, "mazotomapocion:")
         n = t.strip() if t else ""
         if n in pociones_mazo:
             p = pociones_mazo[n]
@@ -2407,7 +2680,6 @@ def ejecutar(linea):
             else:
                 p["usada"] = True
                 print(f"🧪 ¡Glup! Efecto '{p['efecto']}' activado")
-                # Aplica efecto si es una variable
                 if p["efecto"] in variables:
                     print(f"✨ ${p['efecto']} se siente más fuerte")
                 else:
@@ -2836,7 +3108,6 @@ def ejecutar(linea):
             logros_secretos[n.strip()] = pista.strip()
             print(f"🤫 Logro secreto '{n.strip()}' registrado (pista: {pista.strip()})")
         except: print("ERROR secreto")
-            # pq lees hasta aca, bueno, ya no gastes dinero en el mazo
 
     elif linea.startswith("mazodesbloqueasecreto:"):
         t = extraer(linea, "mazodesbloqueasecreto:")
@@ -3053,7 +3324,7 @@ def ejecutar(linea):
         print(color("&a🎬 DRAMA MAZÓNICO:"))
         print(color("&a  Mazo: 'Yo era legendario'"))
         print(color("&a  Lanza: 'Ya no'"))
-        print(color("&a  Mazo: ':'("))
+        print(color("&a  Mazo: ':('"))
         print(color("&0"))
 
     elif linea.startswith("mazorima:"):
@@ -3271,149 +3542,61 @@ def ejecutar(linea):
 ║       YA NO GASTES DINERO EN EL MAZO 🪓                                 ║
 ╚══════════════════════════════════════════════════════════════╝
 
-🎴 v5.0 CLÁSICO (sigue funcionando igual)
+📦 PAQUETES .mazoxpkg (NUEVO)
+  abremazo:<archivo>             Abrir paquete y ejecutar main.mazox
+  mazopkglista                   Listar archivos del paquete actual
+  mazopkginfo                    Info del paquete actual
+  mazopkgleer:<ruta>             Ver archivo de texto del paquete
+  mazopkgbinario:<ruta,destino>  Extraer binario del paquete a disco
+  mazopkgejecuta:<ruta>          Ejecutar archivo .mazox del paquete
+  mazopkgcerrar                  Cerrar paquete actual
+
+🎴 v5.0 CLASICO (sigue funcionando igual)
   Variables: mazo, nomazo, cambiamazo, dinerazo, dinerazonumazo
-  Matemáticas: dinero, menosmazo, masmazo, delmazo, raizmazo, modmazo, potenciamazo
-  Stats: mazopromedio, mazomediana, mazomoda, mazodesviacion, mazogcd, mazolcm, mazofactorial
-  Trig: mazoseno, mazocoseno, mazotangente, mazolog, mazopi, mazoe
-  Azar: nogastes, tirael, mezclamazo, mazoelegir, mazomuestra
+  Matematicas: dinero, menosmazo, masmazo, delmazo, raizmazo, modmazo, potenciamazo
   Listas: mazolista, agregamazo, quitamazo, mazordena, mazofiltra, mazomapea, mazorango
   Diccionarios: mazodicc, mazodiccpon, mazodicctoma, mazodiccquita
-  Sets: mazoset, mazosetpon, mazosetune, mazosetinterseca
-  Stacks/Colas: mazostack, mazopush, mazopop, mazocola, mazoencola, mazodesencola
   Strings: mayusmazo, minusmazo, largomazo, juntamazo, reemplazamazo, mazosplit, mazotrim
-  Regex: mazoregex, mazoregexreemplaza
   JSON: mazojson, mazojsonleer
-  Crypto: mazohash, mazohashmd5, mazobase64, mazodesbase64, mazoaes, mazodesaes, mazofirma
-  Flujo: si, sino, siza, mazoswitch, repmazo, mientrasmazo, paradineros, mazoporelmazo
+  Crypto: mazohash, mazohashmd5, mazobase64, mazodesbase64
+  Flujo: si, sino, siza, mazoswitch, repmazo, mientrasmazo, paradineros
   Funciones: mazofuncion, llamamazo, regresamazo
-  Clases: mazoclase, mazoinstancia, mazoatributo, mazometodo
-  Grafos: mazografo, mazografoarista, mazografobfs, mazografodfs, mazodijkstra
-  Árboles: mazoarbol, mazoarbolinserta, mazoarbolinorden
-  Concurrencia: mazohilo, mazoasync, mazoawait, mazopromesa
-  Patrones: mazosingleton, mazofactory, mazostrategy, mazobuilder, mazodecorador
-  Datos: mazosql, mazopickle, mazounpickle, mazozip, mazounzip, mazocsvlee, mazocsvescribe
-  Red: mazohttp, mazohttppost, mazoscrap, mazocorreo
   Sistema: mazoejecuta, mazoruta, mazodir, mazoarchivolee, mazoarchivoescribe
   Tienda: mazoel, mazogastes, dineroel, guardarmazo, leermazo, sirvemazo
 
-🪓 v5.5 NUEVOS MAZÓNICOS
-  Humor del mazo:
-    mazoburla:              Burla aleatoria del mazo (¡por la lanza!)
-    mazolanzo:              La lanza ataca (¡el mazo queda inservible!)
-    mazoconsejo:            Consejo mazónico aleatorio
-    mazofrase:              Frase del mazo
-    mazotragedia, mazocomedia, mazodrama
-    mazopoema, mazorap, mazorima
-    mazogrita, mazosusurra, mazocanta
-    mazopregunta:           La bola mágica mazónica
+🪓 v5.5 NUEVOS MAZONICOS
+  Humor: mazoburla, mazolanzo, mazoconsejo, mazofrase, mazotragedia,
+         mazocomedia, mazodrama, mazopoema, mazorap, mazorima
+  Boveda: mazoboveda, mazobovedatoma, mazobovedaborra
+  Pociones: mazopocion, mazotomapocion, mazopociones
+  Encantamientos: mazoencanta, mazoverencantamiento, mazoencantamientos
+  Mobs: mazomob, mazoatacamob, mazomobs
+  Mazmorras: mazmazmorra, mazoexplora, mazmazmorras
+  Logros: mazologro, mazologros, mazologrosdef
+  Inventario: mazoinv, mazoinvpon, mazoinvtoma, mazoinvver
+  Trades: mazotrade, mazotradehaz, mazotrades
+  Recetas: mazoreceta, mazocraftea, mazorecetas
+  Hechizos: mazohechizo, mazolanzahechizo, mazohechizos
+  Social: mazoclan, mazoclanune, mazoclanes
+  Rankings: mazorankingpon, mazoranking
+  Torneos: mazotorneo, mazotorneojuega, mazotorneos
+  Apuestas: mazoapuesta, mazoresuelveapuesta, mazoapuestas
+  Contratos: mazocontrato, mazocumple, mazocontratos
+  Misiones: mazomision, mazomisionavanza, mazomisiones
+  Secretos: mazosecreto, mazodesbloqueasecreto, mazosecretos
+  Chismes: mazochisme, mazochismes, mazorumor, mazorrumores
+  Packs: mazopack, mazopackabre, mazopacks
+  Minar: mazomina, mazoexploramundo
+  Anti-gasto: yagastesdinero, nogastesdinero, nogastesdineroenelmazo
+  Sistema extra: mazotodo, mazoritual, mazohuella, mazofrase
+  Estado: mazoguardatodo, mazocargaestado:<arch>
 
-  Bóveda y pociones:
-    mazoboveda:             Ver bóveda mazónica
-    mazoboveda:<n=valor>    Guardar en bóveda
-    mazobovedatoma:<n>      Tomar de bóveda
-    mazobovedaborra:<n>     Borrar de bóveda
-    mazopocion:<n=efecto>   Crear poción
-    mazotomapocion:<n>      Tomar poción
-    mazopociones            Listar pociones
-
-  Encantamientos:
-    mazoencanta:<item,enc>  Encantar item
-    mazoverencantamiento:<i> Ver encantamientos
-    mazoencantamientos      Listar items encantados
-
-  Mobs y mazmorras:
-    mazomob:<n=tipo>        Crear mob
-    mazoatacamob:<mob,daño> Atacar mob
-    mazomobs                Listar mobs
-    mazmazmorra:<n=dif>     Generar mazmorra
-    mazoexplora:<n>         Explorar mazmorra
-    mazmazmorras            Listar mazmorras
-    mazomina:<n,cant>       Minar bloques
-    mazoexploramundo:<lugar> Explorar mundo
-
-  Logros:
-    mazologro:<n>           Desbloquear logro
-    mazologros              Ver logros
-    mazologrosdef           Ver definiciones de logros
-    mazosecreto:<n=pista>   Registrar logro secreto
-    mazodesbloqueasecreto:<n> Desbloquear secreto
-
-  Inventario, trades, recetas:
-    mazoinv:<jug>           Crear inventario
-    mazoinvpon:<j,i->c>     Añadir item
-    mazoinvtoma:<j,i->c>    Quitar item
-    mazoinvver:<jug>        Ver inventario
-    mazotrade:<n=d->r>      Registrar trade
-    mazotradehaz:<n,jug>    Hacer trade
-    mazotrades              Listar trades
-    mazoreceta:<n=ing->r>   Registrar receta
-    mazocraftea:<n,jug>     Craftear
-    mazorecetas             Listar recetas
-
-  Hechizos:
-    mazohechizo:<n=formula> Crear hechizo
-    mazolanzahechizo:<n>    Lanzar hechizo
-    mazohechizos            Listar hechizos
-
-  Social:
-    mazoclan:<n=jefe>       Fundar clan
-    mazoclanune:<n,jug>     Unirse a clan
-    mazoclanes              Listar clanes
-    mazorankingpon:<j,p>    Poner en ranking
-    mazoranking             Ver ranking
-    mazotorneo:<n=jug1,jug2,..> Torneo
-    mazotorneojuega:<n>     Jugar torneo
-    mazotorneos             Listar torneos
-    mazoapuesta:<n=monto->op> Apuesta
-    mazoresuelveapuesta:<n,r> Resolver apuesta
-    mazoapuestas            Listar apuestas
-    mazocontrato:<n=q->r>   Contrato
-    mazocumple:<n>          Cumplir contrato
-    mazocontratos           Listar contratos
-    mazomision:<n=obj>      Misión
-    mazomisionavanza:<n,c>  Avanzar misión
-    mazomisiones            Listar misiones
-
-  Packs:
-    mazopack:<n=item1|item2> Pack
-    mazopackabre:<n>        Abrir pack
-    mazopacks               Listar packs
-
-  Chismes y rumores:
-    mazochisme:<txt>        Chisme
-    mazochismes             Ver chismes
-    mazorumor:<txt>         Rumor
-    mazorrumores            Ver rumores
-
-  Presentaciones:
-    mazopresenta:<a,b>      Presentar
-    mazobeso                Beso mazónico
-
-  Anti-gasto:
-    yagastesdinero          Recordatorio de gasto
-    nogastesdinero          ¡Bien! No gastes
-    nogastesdineroenelmazo  ¡Excelente!
-
-  Sistema extra:
-    mazotodo                Estado total
-    mazoritual              Ritual mazónico
-    mazohuella              Huella del día
-    mazocleanpociones, mazoclearmobs, mazoclearlogros
-    mazolanzo, mazolanza, mazovslanza
-
-  Estado:
-    mazoguardatodo          Guardar todo
-    mazocargaestado:<arch>  Cargar todo
-
-📦 TIENDA Y SISTEMA (igual que v5.0)
-  mazoel, mazogastes, dineroel, guardarmazo, leermazo, sirvemazo
-  limpiamazo, historialmazo, aliasmazo, info, debug, ayuda, salirmazo
+📦 SISTEMA
+  limpiamazo, historialmazo, info, debug, ayuda, salirmazo
 
 ╚══════════════════════════════════════════════════════════════╝
 
 💡 YA NO GASTES DINERO EN EL MAZO!! recuerda bien.
-
 """)
 
     elif linea in aliases:
@@ -3453,13 +3636,10 @@ if __name__ == "__main__":
     if len(sys.argv) > 1:
         archivo = sys.argv[1]
         if archivo.endswith(".mazoxpkg"):
-            try:
-                with open(archivo, "r", encoding="utf-8") as f:
-                    for linea in f:
-                        ejecutar(linea)
-            except FileNotFoundError:
-                print("\033[31mArchivo no encontrado.\033[0m")
+            ejecutar_paquete_mazoxpkg(archivo)
+        elif archivo.endswith(".mazox"):
+            ejecutar_archivo_mazox(archivo)
         else:
-            print("\033[31mEl archivo debe ser .mazoxpkg\033[0m")
+            print("\033[31mEl archivo debe ser .mazoxpkg o .mazox\033[0m")
     else:
         main()
